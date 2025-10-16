@@ -2,8 +2,6 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { convertToCoreMessages, streamText } from 'ai';
 import { getLLMText, source } from '@/lib/source';
 
-export const runtime = 'edge';
-
 const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
