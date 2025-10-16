@@ -1,0 +1,136 @@
+---
+title: POST /verify
+description: Verify Web Proof
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+<Callout type="warn">
+**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
+</Callout>
+
+# **POST** `/api/v1/verify`
+
+Verify a previously generated Web Proof. The verification process:
+
+* **Verifies the HTTPS transcript** - Confirms the integrity of the recorded HTTP request/response data
+* **Verifies the Notary's signature** - Validates the cryptographic signature from the trusted notary service
+* **Confirms data origin** - Ensures the data comes from the expected domain specified in the original request
+* **SSL certificate validation** - Verifies the server's SSL certificate and its complete chain of authority
+* **Extracts plain text transcript** - Retrieves the verified HTTP request/response data for further processing
+  * **Automatic decoding** - Handles chunked transfer encoding and gzip compression automatically
+  * **Raw transcript access** - Provides hex-encoded raw transcript bytes for verification
+
+## Request Body Parameters
+
+Send the presentation object received from `/api/v1/prove` directly as the request body:
+
+* `data`: Hex-encoded proof data
+* `version`: Version of the TLSN protocol used
+* `meta`: Metadata containing the notary URL
+
+## Response Body
+
+* **`success`**: Boolean indicating whether the proof verification was successful
+* **`serverDomain`**: The domain name of the server that was contacted
+* **`notaryKeyFingerprint`**: Fingerprint of the notary's public key used for verification
+* **`request`**: Parsed and decoded HTTP request
+  * **`headers`**: Array of [name, value] pairs
+  * **`body`**: Decoded UTF-8 string (automatically decoded from chunked/gzip encoding)
+  * **`method`**: HTTP method
+  * **`raw`**: Raw transcript bytes as hex-encoded string
+* **`response`**: Parsed and decoded HTTP response
+  * **`headers`**: Array of [name, value] pairs
+  * **`body`**: Decoded UTF-8 string (automatically decoded from chunked/gzip encoding)
+  * **`status`**: HTTP status code
+  * **`raw`**: Raw transcript bytes as hex-encoded string
+* **`error`**: Error message if verification failed (only present on failure)
+
+## Example
+
+Verify a previously generated Web Proof:
+
+<Tabs items={['bash', 'javascript']}>
+  <Tab value="bash">
+    ```bash
+    curl -X POST https://web-prover.vlayer.xyz/api/v1/verify \
+      -H "Content-Type: application/json" \
+      -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
+      -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
+      -d '{
+        "data": "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
+        "version": "0.1.0-alpha.12",
+        "meta": {
+          "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+        }
+      }'
+    ```
+  </Tab>
+  
+  <Tab value="javascript">
+    ```javascript
+    // presentation object from /api/v1/prove response
+    const presentation = {
+      data: "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
+      version: "0.1.0-alpha.12",
+      meta: {
+        notaryUrl: "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+      }
+    };
+
+    const response = await fetch('https://web-prover.vlayer.xyz/api/v1/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-client-id': '4f028e97-b7c7-4a81-ade2-6b1a2917380c',
+        'Authorization': 'Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ'
+      },
+      body: JSON.stringify(presentation)
+    });
+
+    const data = await response.json();
+    console.log(JSON.stringify(data, null, 2));
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+The included credentials are for limited public use. For production use, please contact our team.
+</Callout>
+
+Response:
+
+```json
+{
+  "success": true,
+  "serverDomain": "data-api.binance.vision",
+  "notaryKeyFingerprint": "a7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af",
+  "request": {
+    "method": "GET",
+    "url": "/api/v3/exchangeInfo?symbol=ETHUSDC",
+    "version": "HTTP/1.1",
+    "headers": [
+      ["connection", "close"],
+      ["host", "data-api.binance.vision"]
+    ],
+    "body": null,
+    "raw": "474554202f6170692f76332f65786368616e6765496..."
+  },
+  "response": {
+    "status": 200,
+    "version": "HTTP/1.1",
+    "headers": [
+      ["date", "Thu, 02 Oct 2025 04:27:38 GMT"],
+      ["content-type", "application/json;charset=UTF-8"],
+      ["content-length", "5471"],
+      ["connection", "close"],
+      ["server", "nginx"],
+      ["x-mbx-uuid", "aac63137-8fe9-4780-8571-560d75624e0f"],
+      ["access-control-allow-origin", "*"]
+    ],
+    "body": "{\"timezone\":\"UTC\",\"serverTime\":1759379258989,\"rateLimits\":[{\"rateLimitType\":\"REQUEST_WEIGHT\",\"interval\":\"MINUTE\",\"intervalNum\":1,\"limit\":6000}],\"exchangeFilters\":[],\"symbols\":[{\"symbol\":\"ETHUSDC\",\"status\":\"TRADING\",\"baseAsset\":\"ETH\",\"baseAssetPrecision\":8,\"quoteAsset\":\"USDC\",\"quotePrecision\":8,\"orderTypes\":[\"LIMIT\",\"LIMIT_MAKER\",\"MARKET\",\"STOP_LOSS\",\"STOP_LOSS_LIMIT\",\"TAKE_PROFIT\",\"TAKE_PROFIT_LIMIT\"],\"icebergAllowed\":true,\"isSpotTradingAllowed\":true,\"isMarginTradingAllowed\":true,\"filters\":[{\"filterType\":\"PRICE_FILTER\",\"minPrice\":\"0.01000000\",\"maxPrice\":\"1000000.00000000\",\"tickSize\":\"0.01000000\"}],\"defaultSelfTradePreventionMode\":\"EXPIRE_MAKER\"}]}",
+    "raw": "485454502f312e3120323030204f4b0d0a446174653..."
+  }
+}
+```

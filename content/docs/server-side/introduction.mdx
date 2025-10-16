@@ -1,0 +1,28 @@
+---
+title: Introduction
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
+</Callout>
+
+## Web Prover Server
+
+**Web Prover Server** provides a REST API for generating and verifying cryptographic Web Proofs using [TLSNotary](https://tlsnotary.org/) (TLSN) protocol:
+* [POST `/prove`](/docs/server-side/rest-api/prove) accepts an HTTPS request definition, notarizes the request, and returns a Web Proof.
+* [POST `/verify`](/docs/server-side/rest-api/verify-web-proof) accepts a Web Proof, verifies it, and returns the parsed HTTP transcript.
+
+## Example Use Cases
+
+The main difference between Web Prover Server and our User Facing solutions is that the former executes the proven HTTPS request on a server, while the latter executes the request within the End User's browser or mobile device.
+* Use Web Prover Server when you know the entire HTTPS request you want to prove (including authorization credentials).
+* Use User Facing when the HTTPS request needs to be composed and proven within End User's browser/mobile device (End User's cookies / authorization headers are needed).
+
+Below are some common use cases of Web Prover Server:
+
+* End User authorizes your service through OAUTH to query their X data through X REST API - Web Prover Server can be used to create a Web Proof of the X REST API request and response.
+* You want to put certain data behind HTTPS on-chain - Web Prover Server creates a Web Proof containing that data.
+* You want to create proofs of data served through HTTPS over time - Web Prover Server can be called repeatedly to generate multiple Web Proofs.
+

@@ -1,0 +1,57 @@
+---
+title: POST /verify-zk-proof
+
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
+</Callout>
+
+# **POST** `/api/v0/verify-zk-proof`
+
+Verify a previously generated ZK proof.
+
+## Request Body
+
+* `zkProof`: Serialized ZK proof data to verify
+* `publicOutputs`: Expected public outputs from the ZK proof
+  * `notaryKeyFingerprint`: Expected notary key fingerprint
+  * `url`: Expected URL from the original Web Proof
+  * `queriesHash`: Expected hash of extraction queries (see [how is queries hash calculated](/docs/blockchain/rest-api/compress-web-proof#queries-hash-calculation))
+  * `values`: Expected extracted values array
+* `imageId`: Identifier for the ZK proof verification image/circuit
+
+{/* Where is imageId published? What's the lifecycle of imageId? Multiple imageIds support? */}
+
+## Response Body
+
+* **`success`**: Boolean indicating whether the ZK proof verification was successful
+
+## Example
+
+Verify a previously generated ZK proof:
+
+```bash
+curl -X POST https://zk-prover.vlayer.xyz/api/v0/verify-zk-proof \
+  -H "Content-Type: application/json" \
+  -d '{
+    "zkProof": "0x1234567890abcdef...",
+    "publicOutputs": {
+      "notaryKeyFingerprint": "b593a6f7ea2ec684e47589b1a4dfe3490a0000000000000000000000010000000000000027",
+      "url": "https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC",
+      "queriesHash": "0xabc123def456789012345678901234567890123456789012345678901234abcd",
+      "values": ["3500.50", "ETHUSDC"]
+    },
+    "imageId": "web-proof-verifier-v1"
+  }'
+```
+
+Response:
+
+```json
+{
+  "success": true
+}
+```

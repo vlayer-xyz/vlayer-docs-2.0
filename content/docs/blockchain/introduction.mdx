@@ -1,0 +1,35 @@
+---
+title: Introduction
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
+</Callout>
+
+## ZK Prover Server
+
+ZK Prover Server provides a REST API for compressing Web Proofs into zero-knowledge proofs (ZKPs):
+* [POST `/compress-web-proof`](/docs/blockchain/rest-api/compress-web-proof) accepts a Web Proof (output of `/prove` from [Web Prover Server](/docs/server-side/rest-api/prove) or payload from vouch webhook), verifies the Web Proof, parses HTTP transcript and returns a ZK proof,
+* [POST `/verify-zk-proof`](/docs/blockchain/rest-api/verify-zk-proof) accepts a ZK proof, public outputs, imageId and verifies the proof.
+
+## Example Use Cases
+
+Below are some common use cases of ZK Prover Server:
+
+* Uploading Web Proof on-chain - ZK proof provides succinctness and ease of on-chain verification compared to raw Web Proofs.
+* Hiding Web Proof as private input - ZK proof allows you to prove the existence and validity of Web Proof data without revealing the actual Web Proof content.
+
+### Real-World Examples
+
+Here are concrete examples of what you can build with ZK Prover Server:
+
+* **Prove your Coinbase Total Balance** - Verify your total portfolio value from Coinbase API and store it on-chain
+* **Prove your Binance Trading Volume** - Demonstrate trading activity for DeFi protocols requiring volume verification
+* **Prove ownership of Real World Assets (RWA)** - Verify property ownership, vehicle registration, or asset titles and tokenize them on-chain
+* **Government ID Verification** - Prove you meet age or residency requirements without revealing personal details
+* **Professional Licenses** - Verify professional certifications (medical, legal, financial) on-chain
+* **Social Media Following** - Prove your follower count or engagement metrics for creator platforms
+* **GitHub Contributions** - Verify open-source contributions for developer reputation systems
+* **Domain Ownership** - Prove ownership of web domains for decentralized identity
