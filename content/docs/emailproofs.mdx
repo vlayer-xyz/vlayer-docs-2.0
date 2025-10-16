@@ -53,7 +53,7 @@ The simplified flow of the DKIM signature is:
    
 3. The email server adds a DKIM-Signature header to the email and sends it.
 4. The recipient SMTP server receives the email.
-5. SMTP server checks `DKIM-Signature` header, reads d= tag ... stating its singers domain and selector, which gives him notion where to look for the key.
+5. SMTP server checks `DKIM-Signature` header, reads d= tag ... stating its signer's domain and selector, which gives him notion where to look for the key.
 6. The recipient server fetches the public key from DNS and verifies the signature.
 
 The last step becomes tricky: we don't have the access to DNS from the Solidity level.
