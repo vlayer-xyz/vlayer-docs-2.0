@@ -1,0 +1,289 @@
+---
+title: Binance Data on Ethereum
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
+</Callout>
+
+# Binance Data on Ethereum
+
+This example demonstrates how to put Binance API data on-chain using ZK proofs. The goal is to create a verifiable, on-chain record of Binance exchange data with **cryptographic guarantees** that prevent data manipulation attacks.
+
+## Overview
+
+The workflow consists of three main steps:
+1. **Generate Web Proof** - Create a cryptographic proof of Binance API data
+2. **Generate ZK Proof** - Convert the Web Proof into a succinct ZK proof with extracted price data
+3. **Deploy Smart Contract** - Create a secure on-chain contract that verifies and stores the price data
+
+## Step 1: Generate Web Proof
+
+First, we need a Web Proof of Binance API data. This step is detailed in our [Binance Web Proof example](/server-side/examples/binance). The Web Proof contains the complete HTTP request/response data from the Binance API.
+
+```bash
+curl -X POST https://web-prover.vlayer.xyz/api/v1/prove \
+  -H "Content-Type: application/json" \
+  -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
+  -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
+  -d '{
+    "url": "https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC",
+    "headers": []
+  }'
+```
+
+Response:
+
+```json
+{
+  "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
+  "version": "0.1.0-alpha.12",
+  "meta": {
+    "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+  }
+}
+```
+
+This Web Proof contains the ETH/USDC price data from Binance.
+
+## Step 2: Generate ZK Proof
+
+Next, we use the ZK Prover Server to convert the Web Proof into a ZK proof, extracting the specific price data we want to put on-chain. Pass the entire Web Proof object from Step 1 as the `presentation` parameter:
+
+```bash
+curl -X POST https://zk-prover.vlayer.xyz/api/v0/compress-web-proof \
+  -H "Content-Type: application/json" \
+  -d '{
+    "presentation": {
+      "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
+      "version": "0.1.0-alpha.12",
+      "meta": {
+        "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+      }
+    },
+    "extract": {
+      "response.body": {
+        "jmespath": ["price", "symbol"]
+      }
+    }
+  }'
+```
+
+Response:
+
+```json
+{
+  "zkProof": "0x1234567890abcdef...",
+  "publicOutputs": {
+    "notaryKeyFingerprint": "b593a6f7ea2ec684e47589b1a4dfe3490a0000000000000000000000010000000000000027",
+    "url": "https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC",
+    "timestamp": 1729123456,
+    "queriesHash": "0xabc123def456789012345678901234567890123456789012345678901234abcd",
+    "values": ["3500.50", "ETHUSDC"]
+  }
+}
+```
+
+## Step 3: Smart Contract Implementation
+
+Now we'll create a **secure** Solidity smart contract that verifies the ZK proof and stores the price data on-chain. This contract implements critical security features:
+
+1. **Notary Key Fingerprint Validation** - Ensures the proof comes from a trusted notary
+2. **Query Hash Validation** - Ensures the correct fields were extracted (prevents field substitution attacks)
+3. **ZK Proof Verification** - Cryptographically proves the extraction was correct
+4. **Timestamp Verification** - Uses the notarized timestamp from the Web Proof, not block time
+5. **Byte Array Pattern** - Uses `abi.decode` for flexible encoding of the [journal](https://dev.risczero.com/proof-system/) (RISC Zero's format for public outputs)
+
+This contract uses the [RISC Zero Verifier Router](https://dev.risczero.com/api/blockchain-integration/contracts/verifier) for on-chain verification.
+
+```solidity
+import {IRiscZeroVerifier} from "risc0/contracts/IRiscZeroVerifier.sol";
+
+contract BinancePriceOracle {
+    IRiscZeroVerifier public immutable verifier;
+    bytes32 public constant IMAGE_ID = 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef;
+    
+    bytes32 public immutable expectedNotaryKeyFingerprint;
+    
+    /// @notice Expected queries hash - validates correct fields are extracted
+    /// @dev Computed from: keccak256(abi.encodePacked("response.body", "jmespath", "price", "response.body", "jmespath", "symbol"))
+    bytes32 public immutable expectedQueriesHash;
+    
+    string public immutable expectedUrl;
+    
+    struct PriceData {
+        string symbol;
+        string price;
+        uint256 timestamp;
+        uint256 blockNumber;
+    }
+    
+    mapping(string => PriceData) public prices;
+    
+    constructor(
+        address _verifier,
+        bytes32 _expectedNotaryKeyFingerprint,
+        bytes32 _expectedQueriesHash,
+        string memory _expectedUrl
+    ) {
+        verifier = IRiscZeroVerifier(_verifier);
+        expectedNotaryKeyFingerprint = _expectedNotaryKeyFingerprint;
+        expectedQueriesHash = _expectedQueriesHash;
+        expectedUrl = _expectedUrl;
+    }
+    
+    function updatePrice(
+        bytes calldata journalData,
+        bytes calldata seal
+    ) external {
+        (
+            bytes32 notaryKeyFingerprint,
+            string memory url,
+            uint256 timestamp,
+            bytes32 queriesHash,
+            string memory price,
+            string memory symbol
+        ) = abi.decode(journalData, (bytes32, string, uint256, bytes32, string, string));
+        
+        if (notaryKeyFingerprint != expectedNotaryKeyFingerprint) {
+            revert InvalidNotaryKeyFingerprint();
+        }
+        
+        if (queriesHash != expectedQueriesHash) {
+            revert InvalidQueriesHash();
+        }
+        
+        if (keccak256(bytes(url)) != keccak256(bytes(expectedUrl))) {
+            revert InvalidUrl();
+        }
+        
+        try verifier.verify(seal, IMAGE_ID, sha256(journalData)) {
+            // Proof verified successfully
+        } catch {
+            revert ZKProofVerificationFailed();
+        }
+        
+        prices[symbol] = PriceData({
+            symbol: symbol,
+            price: price,
+            timestamp: timestamp,
+            blockNumber: block.number
+        });
+    }
+
+    function getPrice(string memory symbol) 
+        external 
+        view 
+        returns (PriceData memory) 
+    {
+        return prices[symbol];
+    }
+}
+```
+
+## Step 4: Deploy and Interact with the Contract
+
+Here's how to deploy the contract and submit the ZK proof using viem:
+
+```typescript
+import { createWalletClient, createPublicClient, http, encodeAbiParameters, parseAbiParameters } from 'viem';
+import { sepolia } from 'viem/chains';
+import { privateKeyToAccount } from 'viem/accounts';
+
+const account = privateKeyToAccount('0x...'); // Your private key
+
+const walletClient = createWalletClient({
+  account,
+  chain: sepolia,
+  transport: http()
+});
+
+const publicClient = createPublicClient({
+  chain: sepolia,
+  transport: http()
+});
+
+async function deployContract() {
+  // RISC Zero Verifier Router address (example for Sepolia testnet)
+  const verifierAddress = '0x925d8331ddc0a1F0d96E68CF073DFE1d92b69187';
+  
+  // Expected notary key fingerprint from your trusted notary
+  const expectedNotaryKeyFingerprint = 'b593a6f7ea2ec684e47589b1a4dfe3490a0000000000000000000000010000000000000027';
+  
+  // Expected queries hash from your extract configuration
+  // This should match: keccak256(abi.encodePacked("response.body", "jmespath", "price", "response.body", "jmespath", "symbol"))
+  const expectedQueriesHash = '0xabc123def456789012345678901234567890123456789012345678901234abcd';
+  
+  // The URL we expect to validate against
+  const expectedUrl = 'https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC';
+  
+  const hash = await walletClient.deployContract({
+    abi: CONTRACT_ABI,
+    bytecode: BYTECODE,
+    args: [verifierAddress, expectedNotaryKeyFingerprint, expectedQueriesHash, expectedUrl]
+  });
+  
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  console.log('Contract deployed at:', receipt.contractAddress);
+  
+  return receipt.contractAddress!;
+}
+
+async function updatePrice(contractAddress: `0x${string}`, zkProofResponse: any) {
+  const { zkProof, publicOutputs } = zkProofResponse;
+  
+  const journalData = encodeAbiParameters(
+    parseAbiParameters('bytes32, string, uint256, bytes32, string, string'),
+    [
+      publicOutputs.notaryKeyFingerprint,
+      publicOutputs.url,
+      publicOutputs.timestamp,
+      publicOutputs.queriesHash,
+      publicOutputs.values[0], // price
+      publicOutputs.values[1]  // symbol
+    ]
+  );
+  
+  const hash = await walletClient.writeContract({
+    address: contractAddress,
+    abi: CONTRACT_ABI,
+    functionName: 'updatePrice',
+    args: [journalData, zkProof]
+  });
+  
+  await publicClient.waitForTransactionReceipt({ hash });
+  console.log('Price updated successfully!');
+  
+  const priceData = await publicClient.readContract({
+    address: contractAddress,
+    abi: CONTRACT_ABI,
+    functionName: 'getPrice',
+    args: [publicOutputs.values[1]]
+  }) as any;
+  
+  console.log('Stored price data:', {
+    symbol: priceData.symbol,
+    price: priceData.price,
+    timestamp: priceData.timestamp.toString(),
+    blockNumber: priceData.blockNumber.toString()
+  });
+}
+
+// Example usage with the response from Step 2
+const zkProofResponse = {
+  zkProof: '0x1234567890abcdef...',
+  publicOutputs: {
+    notaryKeyFingerprint: 'b593a6f7ea2ec684e47589b1a4dfe3490a0000000000000000000000010000000000000027',
+    url: 'https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC',
+    timestamp: 1729123456,
+    queriesHash: '0xabc123def456789012345678901234567890123456789012345678901234abcd',
+    values: ['3500.50', 'ETHUSDC']
+  }
+};
+
+// Deploy and use
+const contractAddress = await deployContract();
+await updatePrice(contractAddress, zkProofResponse);
+```

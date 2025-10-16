@@ -1,0 +1,17 @@
+---
+title: Deployment Options
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
+</Callout>
+
+### vlayer-hosted Service
+
+The simplest way to get started is using the vlayer-hosted ZK Prover Server available at `zk-prover.vlayer.xyz`. This managed service handles all infrastructure concerns and provides immediate access to ZK proof generation capabilities.
+
+### Self-hosted On-premises
+
+For enhanced security and privacy, you may want to deploy ZK Prover Server on-premises using Docker. While the vlayer-hosted service provides convenience, self-hosting ensures that your private Web Proof data never leaves your infrastructure during the ZK proof generation process. This gives you full control over your private inputs while maintaining zero-knowledge guarantees that only the specified public outputs are revealed.

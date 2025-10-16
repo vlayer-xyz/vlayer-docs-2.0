@@ -1,0 +1,133 @@
+---
+title: POST /compress-web-proof
+
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
+</Callout>
+
+# **POST** `/api/v0/compress-web-proof`
+
+Generate a ZK proof from a Web Proof. The process:
+
+* **Verifies the Web Proof**:
+  * **Verifies the HTTP transcript** - Confirms the integrity of the recorded HTTP request/response data
+  * **Verifies the Notary's signature** - Validates the cryptographic signature from the trusted notary service
+  * **Confirms data origin** - Ensures the data comes from the expected domain specified in the original request
+  * **SSL certificate validation** - Verifies the server's SSL certificate and its complete chain of authority
+  * **Extracts plain text transcript** - Retrieves the verified HTTP request/response data for further processing
+* **Parses HTTP transcript** - Extracts and decodes the HTTP request/response data
+* **Applies extraction queries** - Extracts specified fields from the response body using [JMESPath](https://jmespath.org/) for JSON parsing
+* **Generates ZK proof** - Creates a zero-knowledge proof attesting to the Web Proof verification and extracted data
+* **Computes queries hash** - Creates a cryptographic hash of the queries used for on-chain validation
+
+## Request Body
+
+* `presentation`: Web Proof object (direct output from [Web Prover Server `/prove`](/docs/server-side/rest-api/prove))
+  * `data`: Hex-encoded proof data
+  * `version`: TLSN protocol version
+  * `meta`: Metadata about the verification
+    * `notaryUrl`: URL of the notary service used
+* `extract`: Object specifying fields to extract from HTTP transcript (optional)
+  * `response.body`: Extract fields from the HTTP response body
+    * `jmespath`: Array of JMESPath expressions for JSON parsing
+
+<Callout type="info">
+**Current Support**: Only `response.body` with `jmespath` is currently supported. Support for other sources (`response.headers`, `request.url`) and formats (`exact`, `regex`, `xpath`) is planned for future releases.
+</Callout>
+
+## Response Body
+
+* `zkProof`: Serialized ZK proof data (seal)
+* `publicOutputs`: ZK public outputs containing verified Web Proof data
+  * `notaryKeyFingerprint`: Fingerprint of the notary's public key used for verification
+  * `url`: The URL that was proven in the original Web Proof
+  * `timestamp`: Unix timestamp (in seconds) of the Web Proof
+  * `queriesHash`: Hash of the extraction queries (see [how is queries hash calculated](/docs/blockchain/rest-api/compress-web-proof#queries-hash-calculation) below)
+  * `values`: Array of extracted values in order matching the queries
+
+## Example
+
+### Extract Price and Symbol from JSON Response
+
+```bash
+curl -X POST https://zk-prover.vlayer.xyz/api/v0/compress-web-proof \
+  -H "Content-Type: application/json" \
+  -d '{
+    "presentation": {
+      "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
+      "version": "0.1.0-alpha.12",
+      "meta": {
+        "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+      }
+    },
+    "extract": {
+      "response.body": {
+        "jmespath": ["price", "symbol"]
+      }
+    }
+  }'
+```
+
+Response:
+
+```json
+{
+  "zkProof": "0x1234567890abcdef...",
+  "publicOutputs": {
+    "notaryKeyFingerprint": "b593a6f7ea2ec684e47589b1a4dfe3490a0000000000000000000000010000000000000027",
+    "url": "https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC",
+    "timestamp": 1729123456,
+    "queriesHash": "0xabc123def456789012345678901234567890123456789012345678901234abcd",
+    "values": ["3500.50", "ETHUSDC"]
+  }
+}
+```
+
+### Future: Multiple Sources and Formats
+
+<Callout type="info">
+**Coming Soon**: Future releases will support extracting from multiple sources (headers, URLs) and using different formats (exact match, regex, XPath):
+
+```json
+{
+  "extract": {
+    "response.body": {
+      "jmespath": ["price", "symbol"]
+    },
+    "response.headers": {
+      "exact": ["Content-Type", "X-RateLimit-Remaining"]
+    },
+    "request.url": {
+      "regex": ["symbol=([A-Z]+)"]
+    }
+  }
+}
+```
+</Callout>
+
+## Queries Hash Calculation
+
+The `queriesHash` is a cryptographic hash of all extraction queries, used by smart contracts to validate that the ZK proof was generated with the expected field extractions. This prevents query substitution attacks where an attacker might try to extract different fields than intended.
+
+### How It's Calculated
+
+The hash is computed using `keccak256` (Ethereum's hashing algorithm) over the concatenated source, format, and query strings for each extraction, in order:
+
+```typescript
+import { encodePacked, keccak256 } from 'viem';
+
+const sources = ["response.body", "response.body"];
+const formats = ["jmespath", "jmespath"];
+const queries = ["price", "symbol"];
+
+const packed = encodePacked(
+  ["string", "string", "string", "string", "string", "string"],
+  [sources[0], formats[0], queries[0], sources[1], formats[1], queries[1]]
+);
+
+const queriesHash = keccak256(packed);
+```

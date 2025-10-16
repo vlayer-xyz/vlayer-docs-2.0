@@ -1,0 +1,22 @@
+---
+title: Deployment Options
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
+</Callout>
+
+
+### vlayer-hosted Service
+
+The simplest way to get started is using the vlayer-hosted Web Prover Server available at `web-prover.vlayer.xyz`. This managed service handles all infrastructure concerns and provides immediate access to Web Proof generation capabilities.
+
+### Self-hosted On-premises
+
+For enhanced security and privacy, you may want to deploy Web Prover Server on-premises using Docker. Consider self-hosting when:
+
+* **Trust model requirements**: TLSN is a Multi-Party Computation (MPC) protocol where trust relies on trusting one of the parties: either the Notary or the Prover. By self-hosting, you maintain control over the Prover and Notary provides independent verification.
+
+* **Sensitive request parameters**: When your API requests contain sensitive data, credentials, or proprietary information that should not leave your infrastructure, on-premises deployment ensures this data never reaches external services.
