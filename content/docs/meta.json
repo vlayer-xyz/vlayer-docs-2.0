@@ -1,9 +1,10 @@
 {
   "pages": [
     "index",
-    "---vlayer.2.0---",
-    "server-side",
-    "blockchain",
+    "---Server-Side proving---",
+    "...server-side",
+    "---Blockchain proving---",
+    "...blockchain",
     "---Support & Help---",
     "troubleshooting",
     "[Discord](https://support.vlayer.xyz)"

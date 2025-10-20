@@ -26,7 +26,7 @@ Generate a ZK proof from a Web Proof. The process:
 
 ## Request Body
 
-* `presentation`: Web Proof object (direct output from [Web Prover Server `/prove`](/docs/server-side/rest-api/prove))
+* `presentation`: Web Proof object (direct output from [Web Prover Server `/prove`](/server-side/rest-api/prove))
   * `data`: Hex-encoded proof data
   * `version`: TLSN protocol version
   * `meta`: Metadata about the verification
@@ -46,7 +46,7 @@ Generate a ZK proof from a Web Proof. The process:
   * `notaryKeyFingerprint`: Fingerprint of the notary's public key used for verification
   * `url`: The URL that was proven in the original Web Proof
   * `timestamp`: Unix timestamp (in seconds) of the Web Proof
-  * `queriesHash`: Hash of the extraction queries (see [how is queries hash calculated](/docs/blockchain/rest-api/compress-web-proof#queries-hash-calculation) below)
+  * `queriesHash`: Hash of the extraction queries (see [how is queries hash calculated](/blockchain/rest-api/compress-web-proof#queries-hash-calculation) below)
   * `values`: Array of extracted values in order matching the queries
 
 ## Example
