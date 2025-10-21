@@ -20,8 +20,23 @@ export const metadata: Metadata = {
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className={`${inter.className} dark`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              document.documentElement.classList.add('dark');
+            `,
+          }}
+        />
+      </head>
       <body className="flex flex-col min-h-screen">
-        <RootProvider>
+        <RootProvider
+          theme={{
+            forcedTheme: 'dark',
+            defaultTheme: 'dark',
+            attribute: 'class',
+          }}
+        >
           <DocsLayout tree={source.pageTree} {...baseOptions()}>
             {children}
           </DocsLayout>
