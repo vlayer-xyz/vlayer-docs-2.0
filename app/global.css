@@ -13,3 +13,200 @@ button[aria-label*="Theme"],
 [data-theme-switcher] {
   display: none !important;
 }
+
+/* Ensure all navigation uses Figtree font */
+button {
+  font-family: Figtree !important;
+  color: white !important;
+}
+
+/* Navigation links should be white */
+nav a, [data-sidebar] a {
+  font-family: Figtree !important;
+  color: white !important;
+}
+
+/* Active navigation styling - ONLY for actual active links */
+a[data-active="true"] {
+  color: #915BF8 !important;
+  font-family: Figtree !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  position: relative !important;
+  background-color: transparent !important;
+}
+
+a[data-active="false"] {
+  color: white !important;
+}
+
+/* Sidebar separator headings */
+p.inline-flex.items-center.gap-2.mb-1\.5.mt-6,
+[data-sidebar] p.mt-6,
+nav p.mt-6,
+[data-sidebar] p[class*="mt-6"],
+nav p[class*="mt-6"] {
+  color: #E1EAE8 !important; 
+  opacity: 50%;
+  font-size: 12px;
+}
+
+body {
+  background-color: black;
+  color: #e4e4e7;
+  line-height: 1.6;
+  padding: 2rem;
+}
+
+/* Headings */
+h1 {
+  color: #915BF8 !important;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  color: white !important;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  color: white !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+h4, h5, h6 {
+  color: white !important;
+}
+
+/* Header links MUST be white */
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+  color: white !important;
+}
+
+h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
+  color: white !important;
+}
+
+/* Paragraph text */
+p {
+  color: #9ca3af;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+/* Regular content links are purple */
+main a:not(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a),
+article a:not(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a),
+p a, 
+li a {
+  color: #915BF8 !important;
+  text-decoration: none;
+}
+
+main a:not(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a):hover,
+article a:not(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a):hover,
+p a:hover, 
+li a:hover {
+  text-decoration: underline;
+}
+
+/* Info boxes / callouts */
+.info-box {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.info-box p {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+/* Code blocks */
+pre {
+  border: 1px solid #1e293b;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+/* Syntax highlighting */
+.line-number {
+  color: #475569;
+  display: inline-block;
+  width: 2.5rem;
+  text-align: right;
+  margin-right: 1.5rem;
+  user-select: none;
+}
+
+.comment {
+  color: #64748b;
+  font-style: italic;
+}
+
+.keyword {
+  color: #c084fc;
+}
+
+.function {
+  color: #fbbf24;
+}
+
+.string {
+  color: #34d399;
+}
+
+.variable {
+  color:  #915BF8
+}
+
+.operator {
+  color: #e4e4e7;
+}
+
+.property {
+  color: #f472b6;
+}
+
+/* Inline code */
+p code, li code {
+  background-color: #1e293b;
+  color: #915BF8;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+li {
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+}
+
+strong, b {
+  color: #915BF8;
+  font-weight: 600;
+}
+
+/* Override fumadocs warning callout color from yellow to purple */
+:root {
+  --color-fd-warning: #915BF8;
+}
