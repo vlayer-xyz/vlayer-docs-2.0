@@ -6,5 +6,173 @@ import { Callout } from "fumadocs-ui/components/callout";
 import { Tabs, Tab } from "fumadocs-ui/components/tabs";
 
 <Callout type="warn">
-  **Under Development**: This API is currently in development. 
+  **Under Development**: This API is currently in development. Documentation and
+  endpoints may change. For production use, please contact our team.
+</Callout>
+
+When using the [Vouch platform](https://github.com/introduction) to generate web proofs, you’ll receive webhook responses that include both the proof and the associated data.
+This guide shows you how to extract and verify these proofs using the [POST `/api/v1/verify`](/server-side/rest-api/verify-web-proof) endpoint.
+
+## Webhook Response Structure
+
+When a user completes verification through Vouch, a webhook is sent to your configured `webhookUrl` containing:
+
+- **`requestId`**: Unique identifier for the verification request
+- **`outputs`**: Aggregated extracted data from all web proofs
+- **`webProofs`**: Array of web proof objects, each containing:
+  - **`outputs`**: Data extracted from this specific proof
+  - **`presentationJson`**: The presentation object (for verification)
+  - **`decodedTranscript`**: Human-readable HTTP request/response data
+
+To receive webhook responses, you need to configure a `webhookUrl` when initiating the verification flow. See the [Getting Started guide](/getting-started/first-steps#webhookurl) or [Integration Example](/examples/integration#step-3-understanding-the-webhook-payload) for details on setting up webhooks.
+
+## Extracting and Verifying a Web Proof
+
+### Step 1: Extract the presentation from webhook response
+
+The `presentationJson` field contains the cryptographic proof that can be verified independently:
+
+<Tabs items={["javascript", "bash"]}>
+  <Tab value="javascript">
+    ```javascript
+    // Example webhook payload received at your endpoint
+    const webhookPayload = {
+      requestId: "00000000-0000-0000-0000-000000000000",
+      outputs: {
+        // ...
+      },
+      webProofs: [
+        {
+          outputs: { /* ... */ },
+          decodedTranscript: { /* ... */ },
+          presentationJson: {
+            data: "014000000000000000db...",
+            meta: {
+              notaryUrl: "https://notary.example.com/v0.1.0-alpha.12",
+              websocketProxyUrl: "wss://proxy.example.com"
+            },
+            version: "0.1.0-alpha.12"
+          }
+        }
+      ]
+    };
+    
+    // Extract first proof - production apps should make sure to verify all delivered proofs
+    const presentation = webhookPayload.webProofs?.[0]?.presentationJson;
+    if (!presentation) throw new Error("No webProofs or presentationJson found");
+    ```
+  </Tab>
+
+  <Tab value="bash">
+    ```bash
+    # Example webhook payload received at your endpoint
+    WEBHOOK_PAYLOAD='{
+      "requestId": "00000000-0000-0000-0000-000000000000",
+      "outputs": {
+        // ...
+      },
+      "webProofs": [
+        {
+          "outputs": { "..." },
+          "decodedTranscript": { "..." },
+          "presentationJson": {
+            "data": "014000000000000000db...",
+            "meta": {
+              "notaryUrl": "https://notary.example.com/v0.1.0-alpha.12",
+              "websocketProxyUrl": "wss://proxy.example.com"
+            },
+            "version": "0.1.0-alpha.12"
+          }
+        }
+      ]
+    }'
+    
+    # Extract first proof - production apps should make sure to verify all delivered proofs
+    PRESENTATION=$(echo "$WEBHOOK_PAYLOAD" | jq '.webProofs[0].presentationJson')
+    ```
+  </Tab>
+</Tabs>
+
+### Step 2: Verify the presentation
+
+Send the extracted presentation to the verification endpoint:
+
+<Tabs items={['javascript', 'bash']}>
+  <Tab value="javascript">
+    ```javascript
+    const verifyResponse = await fetch('https://web-prover.vlayer.xyz/api/v1/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-client-id': '4f028e97-b7c7-4a81-ade2-6b1a2917380c',
+        'Authorization': 'Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ'
+      },
+      body: JSON.stringify(presentation)
+    });
+
+    const verificationResult = await verifyResponse.json();
+    console.log(JSON.stringify(verificationResult, null, 2));
+    ```
+
+  </Tab>
+
+  <Tab value="bash">
+    ```bash
+    curl -s -X POST https://web-prover.vlayer.xyz/api/v1/verify \
+      -H "Content-Type: application/json" \
+      -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
+      -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
+      -d "$PRESENTATION" | jq '.'
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+  The included credentials are for limited public use. For production use,
+  please contact our team.
+</Callout>
+
+### Expected Result
+
+You should receive a JSON response with `"success": true` and the decoded request/response data (see below). Any other result should be treated as an invalid proof and must halt further processing or workflows.
+
+```json
+{
+  "success": true,
+  "serverDomain": "example.com",
+  "notaryKeyFingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+  "request": {
+    "method": "POST",
+    "url": "/api/v2/order/details",
+    "version": "HTTP/1.1",
+    "headers": [
+      ["content-type", "application/json"],
+      ["accept", "*/*"],
+      ["host", "XXXXXXXXXXXXXXX"],
+      ["connection", "XXXXX"]
+    ],
+    "body": "{\"orderNumber\":\"00000000000000000000\",\"createTime\":0}",
+    "raw": "504f5354202f626170692f...",
+    "parsingSuccess": true
+  },
+  "response": {
+    "status": 200,
+    "version": "HTTP/1.1",
+    "headers": [
+      ["content-type", "application/json"],
+      ["content-length", "2543"],
+      ["content-encoding", "gzip"],
+      ["date", "Mon, 01 Jan 2024 00:00:00 GMT"]
+    ],
+    "body": "{\"code\":\"000000\",\"message\":null,\"data\":{\"orderNumber\":\"00000000000000000000\",\"asset\":\"USDT\",\"amount\":\"0.00000000\",...}}",
+    "raw": "485454502f312e3120323030204f4b...",
+    "parsingSuccess": true
+  }
+}
+```
+
+<Callout type="info">
+  Sensitive header values are redacted with `X` characters in the response for
+  privacy. See [redaction configuration](/creating-datasources#redaction) for
+  details.
 </Callout>

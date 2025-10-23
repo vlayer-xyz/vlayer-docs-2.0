@@ -202,11 +202,11 @@ li {
 }
 
 strong, b {
-  color: #915BF8;
   font-weight: 600;
 }
 
 /* Override fumadocs warning callout color from yellow to purple */
 :root {
   --color-fd-warning: #915BF8;
+  --color-fd-info: #915BF8;
 }
