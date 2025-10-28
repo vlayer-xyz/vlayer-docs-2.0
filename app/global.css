@@ -26,6 +26,23 @@ nav a, [data-sidebar] a {
   color: white !important;
 }
 
+/* Reduce spacing between navigation items/descriptions */
+nav li,
+[data-sidebar] li,
+nav > ul > li,
+[data-sidebar] > ul > li {
+  margin-bottom: 0.25rem !important;
+}
+
+/* Reduce spacing for navigation links with descriptions */
+nav a + p,
+[data-sidebar] a + p,
+nav a + div,
+[data-sidebar] a + div {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
 /* Active navigation styling - ONLY for actual active links */
 a[data-active="true"] {
   color: #915BF8 !important;
@@ -98,7 +115,7 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
 /* Paragraph text */
 p {
   color: #9ca3af;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   font-size: 0.95rem;
 }
 
@@ -118,87 +135,157 @@ li a:hover {
   text-decoration: underline;
 }
 
-/* Info boxes / callouts */
-.info-box {
-  background-color: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 0.5rem;
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
+/* Highlight/Callout styling - matches design specification */
+/* Target fumadocs callout containers using multiple selector strategies */
+div[class*="rounded-xl"][class*="border"][class*="bg-fd-card"],
+div[class*="flex"][class*="gap-2"][class*="my-4"][class*="rounded-xl"],
+div[class*="rounded-xl"][class*="bg-fd-card"][class*="p-3"] {
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  padding: 12px 16px !important;
+  gap: 16px !important;
+  isolation: isolate !important;
+  min-height: 48px !important;
+  /* background-color: #16181F!important; */
+  border-left: 2px solid #915BF8 !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-radius: 8px !important;
+  margin: 1.5rem 0 !important;
+  font-family: 'Figtree', sans-serif !important;
+  box-shadow: none !important;
 }
 
-.info-box p {
-  margin-bottom: 0;
-  font-size: 0.9rem;
+/* Callout content container */
+div[class*="flex-col"][class*="gap-2"] {
+  font-family: 'Figtree', sans-serif !important;
 }
 
-/* Code blocks */
-pre {
-  border: 1px solid #1e293b;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  overflow-x: auto;
-  margin: 1.5rem 0;
-  position: relative;
+/* Callout title/heading (when title prop is used) */
+div[class*="flex-col"] > p[class*="font-medium"] {
+  font-family: 'Figtree', sans-serif !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  line-height: 120% !important;
+  color: #915BF8 !important;
+  margin: 0 !important;
 }
 
+/* Callout body text container */
+div[class*="text-fd-muted-foreground"][class*="prose-no-margin"] {
+  font-family: 'Figtree', sans-serif !important;
+  color: #EAECF4 !important;
+}
+
+/* Callout body text - paragraphs and direct text */
+div[class*="text-fd-muted-foreground"] p,
+div[class*="flex-col"] p,
+div[class*="rounded-xl"][class*="border"][class*="bg-fd-card"] p {
+  font-family: 'Figtree', sans-serif !important;
+  font-style: normal !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  line-height: 140% !important;
+  color: #EAECF4 !important;
+  margin: 0 !important;
+}
+
+/* Callout body text - bold/strong text (headings within content like "**Under Development**") */
+div[class*="text-fd-muted-foreground"] strong,
+div[class*="text-fd-muted-foreground"] b,
+div[class*="flex-col"] strong,
+div[class*="flex-col"] b,
+div[class*="rounded-xl"][class*="border"] strong,
+div[class*="rounded-xl"][class*="border"] b {
+  font-family: 'Figtree', sans-serif !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  line-height: 120% !important;
+  color: #915BF8 !important;
+}
+
+/* Ensure all text in callouts uses the right font */
+div[class*="rounded-xl"][class*="border"][class*="bg-fd-card"] * {
+  font-family: 'Figtree', sans-serif !important;
+}
+
+/* Hide callout icons */
+div[class*="rounded-xl"][class*="border"][class*="bg-fd-card"] svg {
+  display: none !important;
+}
+
+
+/* Remove all background variations - ensure uniform background */
+pre *,
+pre code,
+pre code *,
+pre > div,
+pre > div > div,
+pre > code > div,
+pre span,
+pre [data-line],
+pre [class*="line"] {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Syntax highlighting - line numbers */
+.line-number,
+[data-line-number],
+pre [data-line]::before,
+pre [data-line-number]::before,
+pre > div > div[data-line]::before {
+  display: inline-block !important;
+  width: 2.5rem !important;
+  text-align: right !important;
+  margin-right: 1.5rem !important;
+  padding-right: 1rem !important;
+  user-select: none !important;
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Ensure line number containers have no background */
+pre > div[data-line-numbers],
+pre [data-line-numbers] {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Inline code (highlighted text like field names) - matches design specification */
+/* Style all code elements first, then override for code blocks below */
 code {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-  font-size: 0.875rem;
-  line-height: 1.7;
+  background-color: rgba(145, 91, 248, 0.3) !important;
+  color: #FFFFFF !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-family: 'Figtree', sans-serif !important;
+  font-style: normal !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  line-height: 140% !important;
 }
 
-/* Syntax highlighting */
-.line-number {
-  color: #475569;
-  display: inline-block;
-  width: 2.5rem;
-  text-align: right;
-  margin-right: 1.5rem;
-  user-select: none;
-}
-
-.comment {
-  color: #64748b;
-  font-style: italic;
-}
-
-.keyword {
-  color: #c084fc;
-}
-
-.function {
-  color: #fbbf24;
-}
-
-.string {
-  color: #34d399;
-}
-
-.variable {
-  color:  #915BF8
-}
-
-.operator {
-  color: #e4e4e7;
-}
-
-.property {
-  color: #f472b6;
-}
-
-/* Inline code */
-p code, li code {
-  background-color: #1e293b;
-  color: #915BF8;
-  padding: 0.2rem 0.4rem;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
+/* Override for code blocks - restore monospace and original styling */
+pre code {
+  background-color: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace !important;
+  font-weight: normal !important;
+  font-size: 0.875rem !important;
+  line-height: 1.7 !important;
 }
 
 li {
   color: #9ca3af;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 strong, b {

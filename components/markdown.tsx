@@ -94,7 +94,15 @@ function Pre(props: ComponentProps<'pre'>) {
 
   if (lang === 'mdx') lang = 'md';
 
-  return <DynamicCodeBlock lang={lang} code={content.trimEnd()} />;
+  return (
+    <DynamicCodeBlock
+      lang={lang}
+      code={content.trimEnd()}
+      codeblock={{
+        lineNumbers: true,
+      }}
+    />
+  );
 }
 
 const processor = createProcessor();
