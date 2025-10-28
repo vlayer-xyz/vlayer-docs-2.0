@@ -266,6 +266,9 @@ export function AISearchTrigger() {
     transport: new DefaultChatTransport({
       api: '/api/chat',
     }),
+    onError: (error) => {
+      console.error('Chat error:', error);
+    },
   });
 
   const onKeyPress = (e: KeyboardEvent) => {
