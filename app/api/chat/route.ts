@@ -69,7 +69,8 @@ ${docsContext}`,
       onError: (error) => {
         console.error('Stream error:', error);
         // Log specific model error
-        if (error.message?.includes('not_found_error')) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('not_found_error')) {
           console.error('Model not available. Try using: claude-3-sonnet-20240229 or check your API key access.');
         }
       },
