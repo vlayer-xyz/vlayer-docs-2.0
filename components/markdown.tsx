@@ -99,7 +99,7 @@ function Pre(props: ComponentProps<'pre'>) {
       lang={lang}
       code={content.trimEnd()}
       codeblock={{
-        lineNumbers: true,
+        'data-line-numbers': true,
       }}
     />
   );
