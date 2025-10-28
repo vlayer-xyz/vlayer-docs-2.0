@@ -4,7 +4,7 @@ import { Figtree } from 'next/font/google';
 import { AISearchTrigger } from '@/components/search';
 import type { Metadata } from 'next';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import type { LayoutProps } from 'fumadocs-ui/layouts/shared';
+import type { ReactNode } from 'react';
 import { baseOptions } from '@/lib/layout.shared';
 import { source } from '@/lib/source';
 
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Layout({ children }: LayoutProps<'/'>) {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${figtree.className} dark`} suppressHydrationWarning>
       <head>
