@@ -4,6 +4,7 @@ import { Figtree } from 'next/font/google';
 import { AISearchTrigger } from '@/components/search';
 import type { Metadata } from 'next';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+import type { LayoutProps } from 'fumadocs-ui/layouts/shared';
 import { baseOptions } from '@/lib/layout.shared';
 import { source } from '@/lib/source';
 
