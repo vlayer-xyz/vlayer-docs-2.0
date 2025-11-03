@@ -1,0 +1,277 @@
+---
+title: Fullstack Github Prover Tutorial
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+This guide demonstrates how to use vlayer's Web Prover API in a fullstack Next.js application, verifying GitHub commits to both public and private repositories. A live demo of the implementation is available [here](https://github-contribution-verifier.vercel.app/). 
+
+## Prerequisites
+
+- [Node.js 20+](https://nodejs.org/en/download)
+- vlayer Web Prover API credentials
+
+## Installation
+
+```bash
+git clone https://github.com/vlayer-xyz/github-contribution-verifier.git && npm install
+```
+
+## Configuration
+
+Create a `.env.local` file with your vlayer API credentials:
+
+```
+WEB_PROVER_API_CLIENT_ID=your_client_id
+WEB_PROVER_API_SECRET=your_api_secret
+```
+
+Start the development server:
+```bash
+npm run dev
+```
+
+## Usage
+
+1. **Enter a GitHub API contributors URL**
+   
+   The URL follows this format:
+   ```
+   https://api.github.com/repos/{owner}/{repo}/contributors
+   ```
+   
+   Replace `{owner}` with the repository owner's GitHub username and `{repo}` with the repository name. The rest of the URL structure remains the same for all GitHub repositories.
+   
+    <Callout type="warn">
+    For private repositories, provide a [GitHub Personal Access Token](https://github.com/settings/personal-access-tokens).
+    </Callout>
+
+   **Example:**
+   ```
+   https://api.github.com/repos/vlayer-xyz/github-contribution-verifier/contributors
+   ```
+
+2.  Enter the GitHub username that you want to prove commits for.
+
+3. Click "Prove Contributions" to generate a cryptographic proof
+
+   ![GitHub Contribution Proof](/github_webproof.png)
+
+4. Click "Verify Proof" to verify your contributions
+
+   ![GitHub Verification Success](/github_verification.png)
+
+## Architecture Overview
+
+The application follows a three-tier architecture:
+
+1. **Frontend (Client)** - React components that collect user input and display results
+2. **API Routes (Server)** - Next.js API routes that proxy requests to vlayer's Web Prover API
+3. **vlayer Web Prover** - The cryptographic proving and verification service
+
+```
+┌─────────────┐      ┌─────────────────┐      ┌──────────────────┐
+│   Browser   │ ───> │  Next.js API    │ ───> │  vlayer Web      │
+│  (Client)   │ <─── │  Routes         │ <─── │  Prover API      │
+└─────────────┘      └─────────────────┘      └──────────────────┘
+```
+
+### The Prove API Route
+
+The prove endpoint generates a cryptographic proof that authenticates web data from a specified URL. View the complete implementation at [`app/api/prove/route.ts`](https://github.com/vlayer-xyz/github-contribution-verifier/blob/main/app/api/prove/route.ts).
+
+#### Key Components
+
+**1. Timeout Configuration**
+
+```typescript
+export const maxDuration = 160;
+```
+
+Vercel's default timeout is 10 seconds. Since proof generation can take time, we extend this to handle larger GitHub repositories.
+
+**2. Request Handling**
+
+The endpoint accepts a POST request with:
+- `url` - The GitHub API URL to prove
+- `headers` (optional) - HTTP headers to include (e.g., authentication tokens)
+
+```typescript
+const requestBody = {
+  url: body.url,
+  headers: body.headers || [
+    "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    "Accept: application/vnd.github+json"
+  ]
+};
+```
+
+<Callout type="info">
+**Headers Matter:** The User-Agent and Accept headers ensure GitHub treats the request as a legitimate browser request and returns JSON data.
+</Callout>
+
+**3. vlayer API Call**
+
+```typescript
+const response = await fetch('https://web-prover.vlayer.xyz/api/v1/prove', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID || '',
+    'Authorization': 'Bearer ' + process.env.WEB_PROVER_API_SECRET,
+  },
+  body: JSON.stringify(requestBody),
+});
+```
+
+**Authentication:** The vlayer API requires two credentials:
+- `x-client-id` - Your client identifier
+- `Authorization` - Bearer token with your API secret
+
+**4. Response Format**
+
+The vlayer Prove API returns a **presentation object**. See the [POST /prove](/server-side/rest-api/prove#response-body) documentation for the complete response format.
+
+This presentation object is what you'll pass to the verify endpoint.
+
+### The Verify API Route
+
+The verify endpoint validates a presentation and confirms the authenticity of the proven data. View the complete implementation at [`app/api/verify/route.ts`](https://github.com/vlayer-xyz/github-contribution-verifier/blob/main/app/api/verify/route.ts).
+
+#### Key Components
+
+**1. Request Handling**
+
+The endpoint accepts the entire presentation object from the prove step as the request body.
+
+**2. vlayer API Call**
+
+```typescript
+const response = await fetch('https://web-prover.vlayer.xyz/api/v1/verify', {
+  method: 'POST',
+  headers: {
+    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID || '',
+    'Authorization': 'Bearer ' + process.env.WEB_PROVER_API_SECRET,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(body),
+  signal: AbortSignal.timeout(85000) // Abort before Vercel timeout
+});
+```
+
+**Authentication:** Uses the same vlayer API credentials as the prove endpoint:
+- `x-client-id` - Your client identifier
+- `Authorization` - Bearer token with your API secret
+
+**3. Response Format**
+
+The verify endpoint returns the verification result. See the [POST /verify](/server-side/rest-api/verify-web-proof#response-body) documentation for the complete response format.
+
+### Frontend Integration
+
+The frontend ties everything together by orchestrating the prove and verify workflow. View the complete implementation at [`app/page.tsx`](https://github.com/vlayer-xyz/github-contribution-verifier/blob/main/app/page.tsx).
+
+#### The Two-Step Flow
+
+**Step 1: Generate Proof**
+
+```typescript
+const response = await fetch('/api/prove', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    url: url.trim(),
+    headers: [
+      "User-Agent: Mozilla/5.0...",
+      "Accept: application/vnd.github+json",
+      ...(githubToken.trim() ? [`Authorization: Bearer ${githubToken.trim()}`] : [])
+    ]
+  })
+});
+
+const data = await response.json();
+setPresentation(data); // Store for verification step
+```
+
+**Key Points:**
+- The presentation is stored in React state after proving
+- For private repos, include the GitHub token in the headers array
+- The User-Agent ensures GitHub accepts the request
+
+**Step 2: Verify Proof**
+
+```typescript
+const response = await fetch('/api/verify', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(presentation) // Send entire presentation
+});
+
+const data = await response.json();
+```
+
+**Key Points:**
+- The entire presentation object is sent to verify
+- The server validates the cryptographic proof
+- The response includes the verified GitHub contributor data
+
+#### Parsing Verified Data
+
+Once verified, extract the contribution data:
+
+```typescript
+const contributors = JSON.parse(data.response.body);
+const userContributions = contributors.find((contributor: any) => 
+  contributor.login.toLowerCase() === username.trim().toLowerCase()
+);
+
+if (userContributions) {
+  contributionData = {
+    username: userContributions.login,
+    total: userContributions.contributions,
+    avatar: userContributions.avatar_url
+  };
+}
+```
+
+### Key Concepts
+
+#### 1. Cryptographic Proofs
+
+vlayer's Web Prover uses **webproofs** to authenticate web data without revealing sensitive information. When you prove a URL:
+
+- The prover fetches data from the URL
+- Generates a cryptographic proof that the data is authentic
+- Returns both the data and the proof
+- Anyone can verify the proof without re-fetching the data
+
+#### 2. Private Repository Support
+
+For private repositories, include a GitHub Personal Access Token in the headers:
+
+```typescript
+headers: [
+  "User-Agent: Mozilla/5.0...",
+  "Accept: application/vnd.github+json",
+  "Authorization: Bearer YOUR_GITHUB_TOKEN"
+]
+```
+
+The token is used during proof generation but is **not** stored in the proof. Verifiers don't need access to your private repos to confirm the proof's validity.
+
+### Next Steps
+
+Now that you understand the architecture, you can:
+
+1. **Extend the prover** - Prove other GitHub endpoints (commits, pull requests, issues)
+2. **Add on-chain verification** - Deploy a smart contract that verifies proofs on-chain
+3. **Build custom applications** - Use vlayer proofs for:
+   - Contributor badges and NFTs
+   - Access control based on contributions
+   - Reputation systems
+   - Airdrop eligibility

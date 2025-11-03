@@ -148,6 +148,7 @@ div[class*="rounded-xl"][class*="bg-fd-card"][class*="p-3"] {
   gap: 16px !important;
   isolation: isolate !important;
   min-height: 48px !important;
+  /* width: fit-content !important; */
   /* background-color: #16181F!important; */
   border-left: 2px solid #915BF8 !important;
   border-top: none !important;
@@ -213,12 +214,6 @@ div[class*="rounded-xl"][class*="border"] b {
 div[class*="rounded-xl"][class*="border"][class*="bg-fd-card"] * {
   font-family: 'Figtree', sans-serif !important;
 }
-
-/* Hide callout icons */
-div[class*="rounded-xl"][class*="border"][class*="bg-fd-card"] svg {
-  display: none !important;
-}
-
 
 /* Remove all background variations - ensure uniform background */
 pre *,
