@@ -1,8 +1,11 @@
 {
   "pages": [
-    "index",
+    "---INTRODUCTION---",
+    "...introduction",
     "---SERVER-SIDE PROVING---",
     "...server-side",
+    "---CLIENT-SIDE PROVING---",
+    "...client-side",
     "---BLOCKCHAIN PROVING---",
     "...blockchain",
     "---SUPPORT & HELP---",

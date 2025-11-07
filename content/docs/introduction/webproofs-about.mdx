@@ -1,0 +1,59 @@
+---
+title: Introduction to web proofs
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Transport Layer Security (TLS)
+
+**TLS (Transport Layer Security)** is the cryptographic protocol that powers HTTPS connections. It's no exaggeration to say that almost every bit of information transmitted across global computational networks relies on some form of TLS connection.
+
+Similar to TCP/IP, the TLS protocol involves a client connecting to a server. The combined data sent between the client and server is referred to as the **"transcript"**. When your browser connects to, for example, [https://github.com](https://github.com/dashboard), TLS performs a cryptographic handshake to verify the website’s identity and establish a secure communication channel.
+
+TLS provides three core security guarantees:
+
+1. **Confidentiality** – Data is encrypted and protected from eavesdroppers
+2. **Integrity** – Data cannot be tampered with during transit
+3. **Authentication** – Server identity is verified through digital certificates
+
+## Web Proofs
+
+**vlayer** Web Proofs enable secure integration of Web2 data into blockchain applications. The concept of a Web Proof is straightforward: an external party, called a **Verifier**, can take a transcript of a TLS connection, authenticate its origin (server), and ensure the data hasn't been tampered with. 
+
+![Web Proof Diagram](/webproof_diagram.png)
+
+What makes Web Proofs more complex is that the transcript isn't signed by the server. If it was, verifying the signature would be sufficient, and there would be no need for Web Proofs.
+
+To preserve privacy and authenticate data origin, TLS connections use symmetric encryption. Symmetric encryption is both secure and fast, but it doesn't help authenticate the data, as the encryption key is shared by both the client and server. This makes it impossible to determine whether the data was provided by the client or the server. Thus, the **Notary** essentially acts as a third party, joining the TLS connection and notarizing its content.
+
+    <Callout type="info">
+    **TLSNotary**: Under the hood, vlayer uses [TLSNotary](https://tlsnotary.org/), an open-source public good project from the Privacy and Scalability Exploration Foundation, sponsored by the Ethereum Foundation. 
+    </Callout>
+
+## The Notary
+
+The Notary is a third-party server that joins a two-sided TLS connection by maintaining a link with the client while the client connects to the server. From the server's perspective, nothing changes—it still sees the client as a single entity. However, on the client side, the setup is different: the client holds one half of the encryption key, while the Notary holds the other. They collaborate using a **Multi-Party Computation (MPC)** algorithm to manage the connection, encrypting messages and decrypting server responses.
+
+## Privacy preservation
+
+The Notary performs only half of the encryption and decryption, ensuring it never sees the actual content of the transcript. This structure makes the notarization process privacy-preserving.
+
+## Notarisation
+
+The Notary can sign off on the content of the transcript. But how can it verify and sign something it never sees? This is where MPC comes into play. What really happens, is that the client creates a cryptographic commitment of the decrypted transcript, a Merkle Tree root of the transcript. Through MPC, the client proves to the Notary that this commitment matches the encrypted transcript the Notary witnessed. Upon successful notarization, the Notary signs the client's commitment.
+
+## Selective Disclosure 
+
+TLS connections, like HTTPS, often contain sensitive data, such as login credentials or session keys. Leaking this information could result in account hijacking. Therefore, it's crucial that neither the Notary nor the Verifier can access sensitive data. To mitigate security risks, the client redacts parts of the transcript before delivering the proof.
+
+## Verification
+
+The Verifier can then take the redacted transcript from the client, along with the Web Proof signature from the Notary, to authenticate the result.
+
+![Verifier Diagram](/verifier_diagram.png)
+
+## Key Security Features of Web Proofs:
+
+- The client cannot produce a fake notarization without the Notary.
+- The Notary cannot see the content of the transcript at all.
+- The Verifier can only access the redacted transcript.

@@ -10,12 +10,12 @@ import { Tabs, Tab } from "fumadocs-ui/components/tabs";
   endpoints may change. For production use, please contact our team.
 </Callout>
 
-When using the [Vouch platform](https://github.com/introduction) to generate web proofs, you’ll receive webhook responses that include both the proof and the associated data.
+When using the [vouch platform](https://docs.getvouch.io/introduction) to generate web proofs, you’ll receive webhook responses that include both the proof and the associated data.
 This guide shows you how to extract and verify these proofs using the [`POST /api/v1/verify`](/server-side/rest-api/verify-web-proof) endpoint.
 
 ## Webhook Response Structure
 
-When a user completes verification through Vouch, a webhook is sent to your configured `webhookUrl` containing:
+When a user completes verification through vouch, a webhook is sent to your configured `webhookUrl` containing:
 
 - **`requestId`**: Unique identifier for the verification request
 - **`outputs`**: Aggregated extracted data from all web proofs
@@ -24,7 +24,7 @@ When a user completes verification through Vouch, a webhook is sent to your conf
   - **`presentationJson`**: The presentation object (for verification)
   - **`decodedTranscript`**: Human-readable HTTP request/response data
 
-To receive webhook responses, you need to configure a `webhookUrl` when initiating the verification flow. See the [Getting Started guide](/getting-started/first-steps#webhookurl) or [Integration Example](/examples/integration#step-3-understanding-the-webhook-payload) for details on setting up webhooks.
+To receive webhook responses, you need to configure a `webhookUrl` when initiating the verification flow. See the [Getting Started guide](https://docs.getvouch.io/getting-started/first-steps) or [Integration Example](https://docs.getvouch.io/examples/integration) for details on setting up webhooks.
 
 ## Extracting and Verifying a Web Proof
 
@@ -173,6 +173,6 @@ You should receive a JSON response with `"success": true` and the decoded reques
 
 <Callout type="info">
   Sensitive header values are redacted with `X` characters in the response for
-  privacy. See [redaction configuration](/creating-datasources#redaction) for
+  privacy. See [redaction configuration](https://docs.getvouch.io/creating-datasources#redaction) for
   details.
 </Callout>

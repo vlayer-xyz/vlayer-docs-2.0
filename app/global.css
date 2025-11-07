@@ -58,14 +58,17 @@ a[data-active="false"] {
 }
 
 /* Sidebar separator headings */
-p.inline-flex.items-center.gap-2.mb-1\.5.mt-6,
-[data-sidebar] p.mt-6,
-nav p.mt-6,
-[data-sidebar] p[class*="mt-6"],
-nav p[class*="mt-6"] {
+[data-sidebar] p.inline-flex,
+[data-sidebar] p[class*="mt-"],
+nav p.inline-flex,
+nav p[class*="mt-"],
+p.inline-flex.items-center.gap-2,
+[data-sidebar] > * > p,
+nav > * > p {
   color: #E1EAE8 !important; 
-  opacity: 50%;
-  font-size: 12px;
+  opacity: 50% !important;
+  font-size: 12px !important;
+  font-weight: normal !important;
 }
 
 body {
@@ -291,4 +294,29 @@ strong, b {
 :root {
   --color-fd-warning: #915BF8;
   --color-fd-info: #915BF8;
+}
+
+/* Bottom navigation cards (previous/next) - match sidebar color */
+footer [class*="card"],
+[data-footer] [class*="card"],
+[class*="footer"] [class*="card"],
+footer a[class*="border"],
+footer div[class*="border"],
+a[class*="flex"][class*="border"][class*="rounded"],
+div[class*="grid"] > a[class*="border"] {
+  background-color: #18181b !important;
+  transition: none !important;
+}
+
+footer [class*="card"]:hover,
+[data-footer] [class*="card"]:hover,
+[class*="footer"] [class*="card"]:hover,
+footer a[class*="border"]:hover,
+footer div[class*="border"]:hover,
+a[class*="flex"][class*="border"][class*="rounded"]:hover,
+div[class*="grid"] > a[class*="border"]:hover {
+  background-color: #18181b !important;
+  border-color: inherit !important;
+  transform: none !important;
+  box-shadow: none !important;
 }

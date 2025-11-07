@@ -1,0 +1,22 @@
+---
+title: vlayer prover API
+---
+
+## Introduction
+
+**vlayer** offers two distinct approaches to generating cryptographic proofs: **server-side** and **client-side** proving. Understanding which method to use depends primarily on your data source's authentication mechanism: if your data is publicly accessible or token-authenticated, choose server-side proving; if it requires browser session cookies, opt for client-side proving.
+
+## Server-side
+
+[Server-side proving](/server-side/introduction) is designed for data retrieved from HTTP requests that are authenticated via token, making it ideal for APIs such as AI models, fintech services, or any backend integration where browser cookies are not required.
+
+vlayer provides a web prover server for developers, a REST API for generating and verifying cryptographic Web Proofs using TLSNotary (TLSN) protocol.
+
+## Client-side
+
+[Client-side proving](/client-side/introduction), on the other hand, is intended for scenarios where the target data is authenticated using browser cookies, such as logged-in user sessions. It uses the vlayer browser extension to capture and notarize HTTP requests directly from the user's browsing context, making it the right choice for proving access to social media activity, personal or banking data, Web2 loyalty points, reputation scores, or any other cookie-protected content.
+
+It uses the [vouch browser extension](https://chromewebstore.google.com/detail/vouch/jbchhcgphfokabmfacnkafoeeeppjmpl) (compatible with Chrome and Brave browsers) to capture and notarize HTTP requests directly from the user’s browsing context.
+
+For proving HTTP requests that rely on httpOnly cookies, use the client-side approach.
+
