@@ -1,3 +1,3 @@
 {
-  "pages": ["introduction", "vouch-webhook"]
+  "pages": ["introduction", "vouch-webhook", "vouch-github-example"]
 }
