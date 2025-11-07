@@ -1,6 +1,7 @@
 {
   "pages": [
     "---INTRODUCTION---",
+    "index",
     "...introduction",
     "---SERVER-SIDE PROVING---",
     "...server-side",
