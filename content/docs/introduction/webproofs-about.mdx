@@ -18,17 +18,17 @@ TLS provides three core security guarantees:
 
 ## Web Proofs
 
-**vlayer** Web Proofs enable secure integration of Web2 data into blockchain applications. The concept of a Web Proof is straightforward: an external party, called a **Verifier**, can take a transcript of a TLS connection, authenticate its origin (server), and ensure the data hasn't been tampered with. 
+**vlayer** web proofs are cryptographically signed attestations of TLS transcripts that enable secure integration of Web2 data into your applications. An external party, called a **Verifier**, takes a transcript of a TLS connection, authenticates its origin (server), and ensures the data hasn't been tampered with. 
+
+ <Callout type="info">
+    **TLSNotary**: Under the hood, vlayer uses [TLSNotary](https://tlsnotary.org/), an open-source project sponsored by the Ethereum Foundation. 
+</Callout>
 
 ![Web Proof Diagram](/webproof_diagram.png)
 
-What makes Web Proofs more complex is that the transcript isn't signed by the server. If it was, verifying the signature would be sufficient, and there would be no need for Web Proofs.
+What makes web proofs more complex is that the transcript isn't signed by the server. If it was, verifying the signature would be sufficient, and there would be no need for web proofs.
 
 To preserve privacy and authenticate data origin, TLS connections use symmetric encryption. Symmetric encryption is both secure and fast, but it doesn't help authenticate the data, as the encryption key is shared by both the client and server. This makes it impossible to determine whether the data was provided by the client or the server. Thus, the **Notary** essentially acts as a third party, joining the TLS connection and notarizing its content.
-
-    <Callout type="info">
-    **TLSNotary**: Under the hood, vlayer uses [TLSNotary](https://tlsnotary.org/), an open-source public good project from the Privacy and Scalability Exploration Foundation, sponsored by the Ethereum Foundation. 
-    </Callout>
 
 ## The Notary
 
@@ -52,7 +52,7 @@ The Verifier can then take the redacted transcript from the client, along with t
 
 ![Verifier Diagram](/verifier_diagram.png)
 
-## Key Security Features of Web Proofs:
+## Key Security Features of web proofs:
 
 - The client cannot produce a fake notarization without the Notary.
 - The Notary cannot see the content of the transcript at all.

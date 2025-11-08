@@ -2,14 +2,39 @@
 title: Introduction to vlayer
 ---
 
-**vlayer** enables developers to extract, verify and integrate real-world data into Ethereum smart contracts. Our technology is powered by **Zero Knowledge Proofs (ZKP)** and **Multi-Party Computation (MPC)**, allowing you to securely verify private data without exposing sensitive information.
+**vlayer** enables developers to extract, verify and integrate real-world data. Powered by [**TLSNotary**](https://tlsnotary.org/about), vlayer uses **Zero Knowledge Proofs (ZKP)** and **Multi-Party Computation (MPC)** to securely verify private data without exposing sensitive information.
 
-Note: This documentation is currently in development. For extensive vlayer documentation, reference [vlayer 1.0 documentation](https://book.vlayer.xyz/introduction.html).
+## vlayer web proofs
+
+**vlayer** [web proofs](/introduction/webproofs-about) are cryptographically signed attestations of TLS transcripts that enable secure integration of Web2 data into your applications. vlayer provides three distinct developer APIs for generating and utilizing web proofs: [**server-side proving**](/server-side/introduction), [**client-side proving**](/client-side/introduction), and [**ZK proving**](/blockchain/introduction).
+
+Both [server-side](/server-side/introduction) and [client-side](/client-side/introduction) proving generate web proofs for use in any application environment, whether Web2 or Web3. Server-side proving is optimized for token-authenticated API requests and publicly accessible data, while client-side proving leverages the [vouch browser extension](https://chromewebstore.google.com/detail/vouch/jbchhcgphfokabmfacnkafoeeeppjmpl) powered by vlayer to handle cookie-based authentication, making it ideal for proving access to session-protected resources like social media accounts or banking portals.
+
+[ZK proving](/blockchain/introduction), on the other hand, is specifically designed for blockchain integration. It compresses web proofs into succinct zero-knowledge proofs using [RISC Zero](https://dev.risczero.com/api), enabling efficient on-chain storage and verification. This approach solves the challenge of storing large web proof data on-chain by reducing proof size while maintaining cryptographic integrity and verification guarantees. 
+
+## Server-side proving
+
+[Server-side proving](/server-side/introduction) provides a REST API for generating and verifying web proofs using the TLSNotary (TLSN) protocol. This approach is designed for HTTP requests authenticated via API tokens or bearer authentication, making it ideal for integrating with third-party APIs including AI models, fintech services, data aggregators, and any backend service where browser-based session cookies are not required.
+
+The web prover server handles the complete proof generation lifecycle, from executing HTTP requests to notarizing TLS transcripts and producing verifiable web proofs. This enables developers to build applications that cryptographically prove API responses, data integrity, and service interactions without exposing sensitive authentication credentials or raw data.
+
+## Client-side proving
+
+[Client-side proving](/client-side/introduction) enables users to generate web proofs for data protected by browser-based authentication, including session cookies and httpOnly cookies. This approach utilizes the [vouch browser extension](https://chromewebstore.google.com/detail/vouch/jbchhcgphfokabmfacnkafoeeeppjmpl) (available for Chrome and Brave browsers) to capture and notarize HTTP requests directly from the user's authenticated browsing session.
+
+Client-side proving is the preferred solution for scenarios requiring proof of access to user-specific, cookie-authenticated resources such as social media accounts, banking portals, personal email, Web2 loyalty programs, reputation scores, or any platform where authentication relies on browser sessions rather than transferable API tokens. The vouch extension operates within the user's browser context, preserving privacy while generating cryptographic proofs of the underlying HTTP transactions.
+
+## ZK proving
+
+[ZK proving](/blockchain/introduction) provides a REST API for compressing web proofs into succinct zero-knowledge proofs optimized for blockchain integration. Unlike server-side and client-side proving which generate standard web proofs suitable for any environment, ZK proving specifically addresses the constraints of on-chain storage and verification by dramatically reducing proof size while maintaining full cryptographic integrity.
+
+The ZK prover server accepts web proofs generated from either the server-side REST API or client-side vouch extension, then leverages RISC Zero to produce compressed zero-knowledge proofs. These ZK proofs enable efficient on-chain verification and storage, making it practical to anchor web proof data to blockchain networks without incurring prohibitive gas costs. This approach is essential for decentralized applications requiring verifiable off-chain data, such as tokenizing real-world assets, on-chain identity verification, or DeFi protocols integrating external data sources.
 
 ## Contents
 
 <Cards>
-  <Card title="Server Side API (preview)" href="/server-side/introduction" />
-  <Card title="Blockchain (preview)" href="/blockchain/introduction" />
+  <Card title="Server-side proving" href="/server-side/introduction" />
+  <Card title="Client-side proving" href="/client-side/introduction" />
+  <Card title="ZK proving" href="/blockchain/introduction" />
 </Cards>
 
