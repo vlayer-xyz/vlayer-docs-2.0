@@ -22,7 +22,7 @@ Generate a ZK proof from a Web Proof. The process:
 * **Parses HTTP transcript** - Extracts and decodes the HTTP request/response data
 * **Applies extraction queries** - Extracts specified fields from the response body using [JMESPath](https://jmespath.org/) for JSON parsing
 * **Generates ZK proof** - Creates a zero-knowledge proof attesting to the Web Proof verification and extracted data
-* **Computes queries hash** - Creates a cryptographic hash of the queries used for on-chain validation
+* **Computes extraction hash** - Creates a cryptographic hash of the queries used for on-chain validation
 
 ## Request Body
 
@@ -31,7 +31,7 @@ Generate a ZK proof from a Web Proof. The process:
   * `version`: TLSN protocol version
   * `meta`: Metadata about the verification
     * `notaryUrl`: URL of the notary service used
-* `extract`: Object specifying fields to extract from HTTP transcript (optional)
+* `extraction`: Object specifying fields to extract from HTTP transcript (optional)
   * `response.body`: Extract fields from the HTTP response body
     * `jmespath`: Array of JMESPath expressions for JSON parsing
 
@@ -41,13 +41,31 @@ Generate a ZK proof from a Web Proof. The process:
 
 ## Response Body
 
-* `zkProof`: Serialized ZK proof data (seal)
-* `publicOutputs`: ZK public outputs containing verified Web Proof data
-  * `notaryKeyFingerprint`: Fingerprint of the notary's public key used for verification
-  * `url`: The URL that was proven in the original Web Proof
-  * `timestamp`: Unix timestamp (in seconds) of the Web Proof
-  * `queriesHash`: Hash of the extraction queries (see [how is queries hash calculated](/blockchain/rest-api/compress-web-proof#queries-hash-calculation) below)
-  * `values`: Array of extracted values in order matching the queries
+* `zkProof`: Serialized ZK proof data (seal) - used to verify the proof on-chain
+* `journalDataAbi`: ABI-encoded public outputs containing verified Web Proof data - used as the claim being proven
+
+### Understanding journalDataAbi
+
+The `journalDataAbi` is an ABI-encoded tuple containing all the public outputs from the ZK proof. This is the data that was proven and will be decoded in your Solidity smart contract.
+
+#### Encoding Format
+
+The `journalDataAbi` is encoded as tuple parameters in the following order:
+
+```solidity
+(
+  bytes32 notaryKeyFingerprint,  // Fingerprint of the notary's public key
+  string method,                 // HTTP method (e.g., "GET", "POST")
+  string url,                    // The URL that was proven
+  uint256 tlsTimestamp,          // Unix timestamp (in seconds) from the TLS session
+  bytes32 extractionHash,        // Hash of the extraction queries
+  ...extractedValues             // Your extracted values (dynamic types)
+)
+```
+
+<Callout type="info">
+**Important**: The order and types in your `abi.decode` must exactly match the order of your extraction queries and their detected types. If you extract `["price", "symbol"]`, you must decode them in that same order.
+</Callout>
 
 ## Example
 
@@ -64,7 +82,7 @@ curl -X POST https://zk-prover.vlayer.xyz/api/v0/compress-web-proof \
         "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
       }
     },
-    "extract": {
+    "extraction": {
       "response.body": {
         "jmespath": ["price", "symbol"]
       }
@@ -76,16 +94,19 @@ Response:
 
 ```json
 {
-  "zkProof": "0x1234567890abcdef...",
-  "publicOutputs": {
-    "notaryKeyFingerprint": "b593a6f7ea2ec684e47589b1a4dfe3490a0000000000000000000000010000000000000027",
-    "url": "https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC",
-    "timestamp": 1729123456,
-    "queriesHash": "0xabc123def456789012345678901234567890123456789012345678901234abcd",
-    "values": ["3500.50", "ETHUSDC"]
-  }
+  "zkProof": "0xffffffffa1b2c3d4e5f6...",
+  "journalDataAbi": "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af..."
 }
 ```
+
+The `journalDataAbi` contains the ABI-encoded tuple with all public outputs. When decoded in Solidity, it will provide:
+- Notary key fingerprint
+- HTTP method (`GET`)
+- URL (`https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC`)
+- TLS timestamp
+- Extraction hash
+- Price value (`"3500.50"`)
+- Symbol value (`"ETHUSDC"`)
 
 ### Future: Multiple Sources and Formats
 
@@ -94,7 +115,7 @@ Response:
 
 ```json
 {
-  "extract": {
+  "extraction": {
     "response.body": {
       "jmespath": ["price", "symbol"]
     },
@@ -109,25 +130,30 @@ Response:
 ```
 </Callout>
 
-## Queries Hash Calculation
+## Extraction Hash Calculation
 
-The `queriesHash` is a cryptographic hash of all extraction queries, used by smart contracts to validate that the ZK proof was generated with the expected field extractions. This prevents query substitution attacks where an attacker might try to extract different fields than intended.
+The `extractionHash` (included in `journalDataAbi`) is a cryptographic hash of all extraction queries, used by smart contracts to validate that the ZK proof was generated with the expected field extractions. This prevents query substitution attacks where an attacker might try to extract different fields than intended.
+
+<Callout type="warn">
+**Order Matters**: The order of your extraction queries directly affects the hash calculation. Changing the order of queries (e.g., `["price", "symbol"]` vs `["symbol", "price"]`) will produce a completely different hash, causing on-chain validation to fail.
+</Callout>
 
 ### How It's Calculated
 
-The hash is computed using `keccak256` (Ethereum's hashing algorithm) over the concatenated source, format, and query strings for each extraction, in order:
+The hash is computed using `keccak256` (Ethereum's hashing algorithm) over the concatenated source, format, and query strings for each extraction, **in the order they appear**:
 
 ```typescript
 import { encodePacked, keccak256 } from 'viem';
 
 const sources = ["response.body", "response.body"];
 const formats = ["jmespath", "jmespath"];
-const queries = ["price", "symbol"];
+const queries = ["price", "symbol"];  // Order matters!
 
 const packed = encodePacked(
   ["string", "string", "string", "string", "string", "string"],
   [sources[0], formats[0], queries[0], sources[1], formats[1], queries[1]]
 );
 
-const queriesHash = keccak256(packed);
+const extractionHash = keccak256(packed);
+// This hash must match the expectedExtractionHash in your smart contract
 ```
