@@ -1,0 +1,283 @@
+---
+title: Fullstack GitHub ZK Prover Tutorial
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+This guide demonstrates how to use vlayer's Web Prover API with zkTLS in a fullstack Next.js application, verifying GitHub contributions and storing them on-chain using zero-knowledge proofs. A live demo of the implementation is available [here](https://zk-github-verifier.vercel.app/).
+
+<Callout type="info">
+Currently, only testnets are supported (local Anvil, Sepolia, Base Sepolia, OP Sepolia, etc).
+</Callout>
+
+## Prerequisites
+
+- [Node.js 20+](https://nodejs.org/en/download)
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) (for smart contracts)
+- vlayer Web Prover API credentials
+- A wallet with testnet funds 
+
+## Installation
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/vlayer-xyz/zk-github-contribution-verifier.git
+cd zk-github-contribution-verifier
+npm install
+
+# Install contract dependencies
+cd contracts
+npm install
+forge soldeer install
+```
+
+## Configuration
+
+Create a `.env.local` file in the root directory:
+
+```bash
+WEB_PROVER_API_CLIENT_ID=""
+WEB_PROVER_API_SECRET=""
+GITHUB_TOKEN=""
+```
+
+## Usage
+
+### Frontend: Proving GitHub Contributions
+
+The frontend orchestrates the three-step verification flow. View the complete implementation at [`app/page.tsx`](https://github.com/vlayer-xyz/zk-github-contribution-verifier/blob/main/app/page.tsx).
+
+**1. Generate Web Proof**
+
+```typescript
+const response = await fetch('/api/prove', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    query: graphqlQuery,
+    variables: { login, owner, name },
+    githubToken: token // optional for private repos
+  })
+});
+```
+
+**2. Compress to ZK Proof**
+
+```typescript
+const response = await fetch('/api/compress', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    presentation: webProof,
+    username: githubUsername
+  })
+});
+```
+
+**3. Submit to Smart Contract**
+
+The compressed ZK proof is submitted on-chain via the contract's [`submitContribution`](https://github.com/vlayer-xyz/zk-github-contribution-verifier/blob/main/contracts/src/GitHubContributionVerifier.sol#L70) function, which verifies the proof using RISC Zero before storing the contribution data.
+
+### Backend: API Routes
+
+**Prove Endpoint** ([`app/api/prove/route.ts`](https://github.com/vlayer-xyz/zk-github-contribution-verifier/blob/main/app/api/prove/route.ts))
+
+Proxies GitHub GraphQL queries through vlayer's Web Prover API to generate tamper-proof attestations:
+
+```typescript
+const response = await fetch(`${baseUrl}/prove`, {
+  method: 'POST',
+  headers: {
+    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID,
+    'Authorization': `Bearer ${process.env.WEB_PROVER_API_SECRET}`
+  },
+  body: JSON.stringify({
+    url: 'https://api.github.com/graphql',
+    method: 'POST',
+    headers: [...],
+    body: JSON.stringify({ query, variables })
+  })
+});
+```
+
+**Compress Endpoint** ([`app/api/compress/route.ts`](https://github.com/vlayer-xyz/zk-github-contribution-verifier/blob/main/app/api/compress/route.ts))
+
+Converts web proofs into ZK proofs suitable for on-chain verification:
+
+```typescript
+const response = await fetch(`${zkProverUrl}/compress-web-proof`, {
+  method: 'POST',
+  headers: {
+    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID,
+    'Authorization': `Bearer ${process.env.WEB_PROVER_API_SECRET}`
+  },
+  body: JSON.stringify({
+    presentation: webProof,
+    extraction: {
+      "response.body": {
+        "jmespath": [
+          "data.repository.nameWithOwner",
+          "data.user.login",
+          "data.mergedPRs.issueCount"
+        ]
+      }
+    }
+  })
+});
+```
+
+## Smart Contract
+
+The [`GitHubContributionVerifier`](https://github.com/vlayer-xyz/zk-github-contribution-verifier/blob/main/contracts/src/GitHubContributionVerifier.sol) contract verifies ZK proofs and stores contribution records on-chain.
+
+### Key Features
+
+- **ZK Proof Verification**: Uses RISC Zero verifier to validate proofs
+- **Data Validation**: Ensures notary fingerprint, queries hash, and URL match expected values
+- **On-Chain Storage**: Permanently stores verified contributions in a mapping
+
+### Contract Structure
+
+```solidity
+contract GitHubContributionVerifier {
+    IRiscZeroVerifier public immutable VERIFIER;
+    bytes32 public immutable IMAGE_ID;
+    bytes32 public immutable EXPECTED_NOTARY_KEY_FINGERPRINT;
+    bytes32 public immutable EXPECTED_QUERIES_HASH;
+    
+    mapping(string => mapping(string => uint256)) 
+        public contributionsByRepoAndUser;
+    
+    function submitContribution(
+        bytes calldata journalData,
+        bytes calldata seal
+    ) external {
+        // Decode journal data
+        // Validate notary, queries hash, URL
+        // Verify ZK proof
+        // Store contribution
+    }
+}
+```
+
+The `journalData` is ABI-encoded containing: `notaryKeyFingerprint`, `url`, `timestamp`, `queriesHash`, `username`, and `contributions`.
+
+## Deployment
+
+### Local Anvil Testing
+
+**1. Start Anvil**
+
+```bash
+anvil
+```
+
+**2. Set Environment Variables**
+
+```bash
+export ANVIL_RPC_URL=http://127.0.0.1:8545
+export PRIVATE_KEY=0x<anvil_account_private_key>
+export ZK_PROVER_GUEST_ID=$(curl -s https://zk-prover.vlayer.xyz/api/v0/guest-id | jq -r '.data.guestId')
+export NOTARY_KEY_FINGERPRINT=0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af
+export QUERIES_HASH=0x52456ae0219527af75909c9c3b66452ca1535c8828a8b991aa344de023fde155
+export EXPECTED_URL=https://api.github.com/graphql
+```
+
+**Environment Variable Explanations:**
+
+- **`NOTARY_KEY_FINGERPRINT`**: A cryptographic fingerprint of vlayer's notary key used to sign web proofs. This ensures proofs originate from vlayer's trusted notary service. The contract validates that submitted proofs match this fingerprint to prevent forgery.
+
+- **`QUERIES_HASH`**: A `keccak256` hash computed from the extraction configuration (source, format, and query strings) used during ZK proof compression. For the GitHub example, this includes the source (`"response.body"`), format (`"jmespath"`), and queries (`"data.repository.nameWithOwner"`, `"data.user.login"`, `"data.mergedPRs.issueCount"`). The contract verifies this hash matches the extraction config used during proof generation, preventing query substitution attacks. See the [queries hash calculation documentation](/blockchain/rest-api/compress-web-proof#queries-hash-calculation) for details.
+
+**3. Deploy Contract**
+
+```bash
+cd contracts
+npm run deploy:anvil
+```
+
+**4. Submit Proof**
+
+```bash
+npm run submit-proof anvil ./zk_proof_compress_*.json <contract_address>
+```
+
+### Sepolia Testnet
+
+**1. Configure Environment**
+
+Add to `.env.local` in the root directory:
+
+```bash
+NEXT_PUBLIC_SEPOLIA_CONTRACT_ADDRESS=<deployed_address>
+NEXT_PUBLIC_DEFAULT_CHAIN_ID=11155111
+```
+
+Add to `.env` in `contracts/`:
+
+```bash
+SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/<your_key>
+PRIVATE_KEY=0x<your_private_key>
+ZK_PROVER_GUEST_ID="0xd4759baae1296d344b129ddd497a889760d5c2171ab98332a1427df0ffec6898"
+NOTARY_KEY_FINGERPRINT=0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af # vlayer notary key fingerprint
+QUERIES_HASH=0x<hash> # Hash of JMESPath extraction queries
+EXPECTED_URL=https://api.github.com/graphql
+```
+
+**2. Deploy Contract**
+
+```bash
+cd contracts
+npm run deploy:sepolia
+```
+
+**3. Verify Contract** (optional)
+
+```bash
+npm run verify sepolia <contract_address>
+```
+
+**4. Use in Application**
+
+The frontend automatically connects to the deployed contract when `NEXT_PUBLIC_SEPOLIA_CONTRACT_ADDRESS` is set.
+
+## Testing
+
+The end-to-end suite exercises the full stack (Anvil chain, contract deployment, Next.js API routes, and the prover API proxy).
+
+```bash
+npm run test:e2e
+```
+
+**Requirements:**
+
+- Foundry's `anvil` and `forge` must be available on your `PATH`
+- `contracts` dependencies installed (`npm install` inside `contracts/`)
+- No other services bound to the random ports the test selects
+- Real network access plus the following environment variables (the test fails fast if any are missing):
+  - `WEB_PROVER_API_CLIENT_ID` and `WEB_PROVER_API_SECRET` (vlayer credentials)
+  - `GITHUB_TOKEN` (or `GITHUB_GRAPHQL_TOKEN`) with GitHub GraphQL access
+  - Optional overrides: `WEB_PROVER_API_URL`, `ZK_PROVER_API_URL`, `GITHUB_LOGIN`, `GITHUB_REPO_OWNER`, `GITHUB_REPO_NAME` for the query target
+- The test calls `/api/prove`, `/api/compress`, and finally submits the compressed proof to the locally deployed contract via viem/wagmi-compatible logic.
+- These env vars can be exported in your shell or placed in a `.env.test` file in the repo root, which the Vitest suite loads automatically before running.
+
+**Example `.env.test`:**
+
+```bash
+GITHUB_TOKEN=ghp_xxx
+GITHUB_LOGIN=your-handle
+GITHUB_REPO_OWNER=vlayer-xyz
+GITHUB_REPO_NAME=vlayer
+WEB_PROVER_API_CLIENT_ID=client-id
+WEB_PROVER_API_SECRET=client-secret
+```
+
+## Next Steps
+
+Now that you understand the ZK proof flow, you can:
+
+1. **Customize extraction queries** - Modify JMESPath queries in `/api/compress` to extract different GitHub data
+2. **Extend the contract** - Add additional validation or storage logic
+3. **Build reputation systems** - Use verified contributions for access control or airdrops
+4. **Integrate with other chains** - Deploy to Base Sepolia or OP Sepolia using the same pattern
