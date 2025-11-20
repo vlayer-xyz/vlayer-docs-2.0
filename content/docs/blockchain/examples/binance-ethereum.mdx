@@ -75,12 +75,25 @@ Response:
 
 ```json
 {
-  "zkProof": "0xffffffffa1b2c3d4e5f6...",
-  "journalDataAbi": "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af..."
+  "success": true,
+  "data": {
+    "zkProof": "0xffffffffa1b2c3d4e5f6...",
+    "journalDataAbi": "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af...",
+    "journalDecodeInfo": {
+      "journalTypes": ["bytes32", "string", "string", "uint256", "bytes32", "string", "string"],
+      "journalValues": ["0xa7e62d7f17aa7a22...", "\"GET\"", "\"https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC\"", "1234567890", "0xe27c1b124a855f1f...", "\"3500.50\"", "\"ETHUSDC\""],
+      "solidityCodeSnippet": "(bytes32 notaryKeyFingerprint, string memory method, string memory url, uint256 tlsTimestamp, bytes32 extractionHash, string memory extractedValue0, string memory extractedValue1) = abi.decode(journalData, (bytes32, string, string, uint256, bytes32, string, string))"
+    }
+  }
 }
 ```
 
 The `journalDataAbi` contains ABI-encoded public outputs that will be decoded in your smart contract. This includes the notary key fingerprint, HTTP method, URL, TLS timestamp, extraction hash, and your extracted values (price and symbol).
+
+The `journalDecodeInfo` provides helpful information for decoding the `journalDataAbi`:
+- **`solidityCodeSnippet`**: Ready-to-use Solidity code you can copy directly into your contract
+- **`journalTypes`**: Array of Solidity types in the correct order
+- **`journalValues`**: Actual values for debugging/verification
 
 ## Step 3: Smart Contract Implementation
 
@@ -235,7 +248,7 @@ async function deployContract() {
 }
 
 async function updatePrice(contractAddress: `0x${string}`, zkProofResponse: any) {
-  const { zkProof, journalDataAbi } = zkProofResponse;
+  const { zkProof, journalDataAbi } = zkProofResponse.data;
   
 
   const hash = await walletClient.writeContract({
@@ -265,8 +278,14 @@ async function updatePrice(contractAddress: `0x${string}`, zkProofResponse: any)
 
 // Example usage with the response from Step 2
 const zkProofResponse = {
-  zkProof: '0xffffffffa1b2c3d4e5f6...',
-  journalDataAbi: '0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af...'
+  success: true,
+  data: {
+    zkProof: '0xffffffffa1b2c3d4e5f6...',
+    journalDataAbi: '0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af...',
+    journalDecodeInfo: {
+      // ... decode info omitted for brevity
+    }
+  }
 };
 
 // Deploy and use
