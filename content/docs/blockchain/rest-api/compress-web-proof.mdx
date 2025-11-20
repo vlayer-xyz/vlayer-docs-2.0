@@ -41,12 +41,31 @@ Generate a ZK proof from a Web Proof. The process:
 
 ## Response Body
 
-* `zkProof`: Serialized ZK proof data (seal) - used to verify the proof on-chain
-* `journalDataAbi`: ABI-encoded public outputs containing verified Web Proof data - used as the claim being proven
+### Success Response
+
+* `success`: Boolean indicating if the operation succeeded (always `true` for success responses)
+* `data`: Object containing the compressed proof data
+  * `zkProof`: Serialized ZK proof data (seal) - used to verify the proof on-chain
+  * `journalDataAbi`: ABI-encoded public outputs containing verified Web Proof data - used as the claim being proven
+
+<Callout type="info">
+Looking for decode info (types, values, Solidity snippet)? Use <code>POST /api/v0/debug/journal-decode-helper</code> with the same request body.
+</Callout>
+
+### Error Response
+
+* `success`: Boolean indicating failure (always `false` for error responses)
+* `error`: Object containing error details
+  * `code`: Error code string (e.g., `"INVALID_REQUEST"`, `"PROOF_GENERATION_FAILED"`)
+  * `message`: Human-readable error message
 
 ### Understanding journalDataAbi
 
 The `journalDataAbi` is an ABI-encoded tuple containing all the public outputs from the ZK proof. This is the data that was proven and will be decoded in your Solidity smart contract.
+
+<Callout type="info">
+**Quick Start**: Call `/debug/journal-decode-helper` with the same request to get a `solidityCodeSnippet`! It provides ready-to-use Solidity code that you can copy directly into your contract for decoding the journal data.
+</Callout>
 
 #### Encoding Format
 
@@ -100,19 +119,28 @@ Response:
 
 ```json
 {
-  "zkProof": "0xffffffffa1b2c3d4e5f6...",
-  "journalDataAbi": "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af..."
+  "success": true,
+  "data": {
+    "zkProof": "0xffffffffa1b2c3d4e5f6...",
+    "journalDataAbi": "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af..."
+  }
 }
 ```
 
-The `journalDataAbi` contains the ABI-encoded tuple with all public outputs. When decoded in Solidity, it will provide:
-- Notary key fingerprint
-- HTTP method (`GET`)
-- URL (`https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC`)
-- TLS timestamp
-- Extraction hash
-- Price value (`"3500.50"`)
-- Symbol value (`"ETHUSDC"`)
+The `journalDataAbi` contains the ABI-encoded tuple with all public outputs.
+
+To obtain decoding helpers (types, values, and ready-to-use Solidity snippet), call [`POST /debug/journal-decode-helper`](/blockchain/rest-api/journal-decode-helper) with the same request body.
+
+When decoded in Solidity using the provided snippet, the `journalDataAbi` will provide:
+- `notaryKeyFingerprint`: Fingerprint of the notary's public key
+- `method`: HTTP method (`"GET"`)
+- `url`: The URL that was proven (`"https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC"`)
+- `tlsTimestamp`: Unix timestamp from the TLS session (`1234567890`)
+- `extractionHash`: Hash of the extraction queries
+- `extractedValue0`: Price value (`"3500.50"`)
+- `extractedValue1`: Symbol value (`"ETHUSDC"`)
+
+`extractedValue0` and `extractedValue1` are dynamic fields - they appear when using the `extraction` field in the request, and are automatically named with consecutive numbers starting from `0`.
 
 ### Future: Multiple Sources and Formats
 

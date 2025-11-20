@@ -1,0 +1,90 @@
+---
+title: POST /debug/journal-decode-helper
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+# POST /api/v0/debug/journal-decode-helper
+
+<Callout type="warn" title="Development Tool Only">
+  This endpoint is for **debugging and development purposes only**. It provides
+  helper information for decoding journal data in Solidity but does NOT generate
+  verifiable ZK proofs. Use
+  [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) to obtain
+  on-chain verifiable ZK proofs for production.
+</Callout>
+
+Returns helper data to decode `journalDataAbi` from the ZK Prover's `/compress-web-proof` response.
+
+## Request Body
+
+Same as [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) — pass the Web Proof `presentation` and optional `extraction` config. The endpoint performs a dry run (verification + extraction) and derives decode helper information.
+
+## Response Body
+
+### Success
+
+- `success`: true
+- `data`:
+  - `journalTypes`: Array of Solidity type names (e.g., `["bytes32","string","uint256"]`)
+  - `journalValues`: Array of formatted values for display/debugging
+  - `solidityCodeSnippet`: Ready-to-use Solidity `abi.decode` snippet
+  - `journalDataAbi`: Hex-encoded ABI data (same format as returned by `/compress-web-proof`)
+
+### Error
+
+- `success`: false
+- `error`:
+  - `code`: Error code
+  - `message`: Human-readable error
+
+## Example
+
+```bash
+curl -X POST https://zk-prover.vlayer.xyz/api/v0/debug/journal-decode-helper \
+  -H "Content-Type: application/json" \
+  -d '{
+    "presentation": {
+      "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
+      "version": "0.1.0-alpha.12",
+      "meta": {
+        "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+      }
+    },
+    "extraction": {
+      "response.body": {
+        "jmespath": ["price", "symbol"]
+      }
+    }
+  }'
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "journalTypes": [
+      "bytes32",
+      "string",
+      "string",
+      "uint256",
+      "bytes32",
+      "string",
+      "string"
+    ],
+    "journalValues": [
+      "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af",
+      "\"GET\"",
+      "\"https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC\"",
+      "1234567890",
+      "0xe27c1b124a855f1f5c25b432559aaf91ce2bf13f95f81acfd97ab8e2c846b767",
+      "\"3500.50\"",
+      "\"ETHUSDC\""
+    ],
+    "solidityCodeSnippet": "(bytes32 notaryKeyFingerprint, string memory method, string memory url, uint256 tlsTimestamp, bytes32 extractionHash, string memory extractedValue0, string memory extractedValue1) = abi.decode(journalData, (bytes32, string, string, uint256, bytes32, string, string))",
+    "journalDataAbi": "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af..."
+  }
+}
+```

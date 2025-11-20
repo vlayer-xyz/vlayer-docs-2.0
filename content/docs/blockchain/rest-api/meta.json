@@ -1,4 +1,4 @@
 {
   "title": "REST API",
-  "pages": ["compress-web-proof", "guest-id"]
+  "pages": ["compress-web-proof", "guest-id", "journal-decode-helper"]
 }
