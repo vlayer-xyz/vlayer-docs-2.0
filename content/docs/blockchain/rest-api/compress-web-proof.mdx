@@ -64,7 +64,7 @@ Looking for decode info (types, values, Solidity snippet)? Use <code>POST /api/v
 The `journalDataAbi` is an ABI-encoded tuple containing all the public outputs from the ZK proof. This is the data that was proven and will be decoded in your Solidity smart contract.
 
 <Callout type="info">
-**Quick Start**: Use the `solidityCodeSnippet` from `journalDecodeInfo` in the response! It provides ready-to-use Solidity code that you can copy directly into your contract for decoding the journal data.
+**Quick Start**: Call `/journal-decode-info` with the same request to get a `solidityCodeSnippet`! It provides ready-to-use Solidity code that you can copy directly into your contract for decoding the journal data.
 </Callout>
 
 #### Encoding Format
