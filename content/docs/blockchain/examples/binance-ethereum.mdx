@@ -88,11 +88,21 @@ The `journalDataAbi` contains ABI-encoded public outputs that will be decoded in
 Fetch decode helpers via a separate call:
 
 ```bash
-curl -X POST https://zk-prover.vlayer.xyz/api/v0/journal-decode-info \
+curl -X POST https://zk-prover.vlayer.xyz/api/v0/debug/journal-decode-helper \
   -H "Content-Type: application/json" \
   -d '{
-    "presentation": { "data": "...", "version": "0.1.0-alpha.12", "meta": { "notaryUrl": "..." } },
-    "extraction": { "response.body": { "jmespath": ["price", "symbol"] } }
+    "presentation": {
+      "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
+      "version": "0.1.0-alpha.12",
+      "meta": {
+        "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+      }
+    },
+    "extraction": {
+      "response.body": {
+        "jmespath": ["price", "symbol"]
+      }
+    }
   }'
 ```
 

@@ -49,7 +49,7 @@ Generate a ZK proof from a Web Proof. The process:
   * `journalDataAbi`: ABI-encoded public outputs containing verified Web Proof data - used as the claim being proven
 
 <Callout type="info">
-Looking for decode info (types, values, Solidity snippet)? Use <code>POST /api/v0/journal-decode-info</code> with the same request body.
+Looking for decode info (types, values, Solidity snippet)? Use <code>POST /api/v0/debug/journal-decode-helper</code> with the same request body.
 </Callout>
 
 ### Error Response
@@ -64,7 +64,7 @@ Looking for decode info (types, values, Solidity snippet)? Use <code>POST /api/v
 The `journalDataAbi` is an ABI-encoded tuple containing all the public outputs from the ZK proof. This is the data that was proven and will be decoded in your Solidity smart contract.
 
 <Callout type="info">
-**Quick Start**: Call `/journal-decode-info` with the same request to get a `solidityCodeSnippet`! It provides ready-to-use Solidity code that you can copy directly into your contract for decoding the journal data.
+**Quick Start**: Call `/debug/journal-decode-helper` with the same request to get a `solidityCodeSnippet`! It provides ready-to-use Solidity code that you can copy directly into your contract for decoding the journal data.
 </Callout>
 
 #### Encoding Format
@@ -134,7 +134,7 @@ Response:
 
 The `journalDataAbi` contains the ABI-encoded tuple with all public outputs.
 
-To obtain decoding helpers (types, values, and ready-to-use Solidity snippet), call [`POST /journal-decode-info`](/blockchain/rest-api/journal-decode-info) with the same request body.
+To obtain decoding helpers (types, values, and ready-to-use Solidity snippet), call [`POST /debug/journal-decode-helper`](/blockchain/rest-api/journal-decode-helper) with the same request body.
 
 When decoded in Solidity using the provided snippet, the `journalDataAbi` will provide:
 - `notaryKeyFingerprint`: Fingerprint of the notary's public key
