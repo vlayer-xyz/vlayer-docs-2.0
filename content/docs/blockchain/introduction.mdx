@@ -11,8 +11,8 @@ import { Callout } from 'fumadocs-ui/components/callout';
 ## ZK Prover Server
 
 ZK Prover Server provides a REST API for compressing Web Proofs into zero-knowledge proofs (ZKPs):
-* [POST /compress-web-proof](/blockchain/rest-api/compress-web-proof) accepts a Web Proof (output of `/prove` from [Web Prover Server](/server-side/rest-api/prove) or payload from vouch webhook), verifies the Web Proof, parses HTTP transcript and returns a ZK proof with ABI-encoded public outputs (journalDataAbi),
-* [POST /verify-zk-proof](/blockchain/rest-api/verify-zk-proof) accepts a ZK proof, journalDataAbi, imageId and verifies the proof.
+* [POST /compress-web-proof](/blockchain/rest-api/compress-web-proof) accepts a Web Proof (output of `/prove` from [Web Prover Server](/server-side/rest-api/prove) or payload from vouch webhook), verifies the Web Proof, parses HTTP transcript and returns a ZK proof with ABI-encoded public outputs (journalDataAbi)
+* [GET /guest-id](/blockchain/rest-api/guest-id) returns the ID of RISC Zero guest program used to generate ZK Proofs in /compress-web-proof endpoint
 
 ## Example Use Cases
 

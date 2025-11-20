@@ -1,4 +1,4 @@
 {
   "title": "REST API",
-  "pages": ["compress-web-proof", "verify-zk-proof"]
+  "pages": ["compress-web-proof", "guest-id"]
 }
