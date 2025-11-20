@@ -47,10 +47,10 @@ Generate a ZK proof from a Web Proof. The process:
 * `data`: Object containing the compressed proof data
   * `zkProof`: Serialized ZK proof data (seal) - used to verify the proof on-chain
   * `journalDataAbi`: ABI-encoded public outputs containing verified Web Proof data - used as the claim being proven
-  * `journalDecodeInfo`: Helper object for decoding the journal data in Solidity
-    * `journalTypes`: Array of Solidity type names (e.g., `["bytes32", "string", "uint256"]`)
-    * `journalValues`: Array of formatted values for display/debugging (e.g., `["0xabc123...", "\"GET\"", "1234567890"]`)
-    * `solidityCodeSnippet`: Ready-to-use Solidity code snippet for decoding the journal data
+
+<Callout type="info">
+Looking for decode info (types, values, Solidity snippet)? Use <code>POST /api/v0/journal-decode-info</code> with the same request body.
+</Callout>
 
 ### Error Response
 
@@ -121,37 +121,14 @@ Response:
   "success": true,
   "data": {
     "zkProof": "0xffffffffa1b2c3d4e5f6...",
-    "journalDataAbi": "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af...",
-    "journalDecodeInfo": {
-      "journalTypes": [
-        "bytes32",
-        "string",
-        "string",
-        "uint256",
-        "bytes32",
-        "string",
-        "string"
-      ],
-      "journalValues": [
-        "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af",
-        "\"GET\"",
-        "\"https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC\"",
-        "1234567890",
-        "0xe27c1b124a855f1f5c25b432559aaf91ce2bf13f95f81acfd97ab8e2c846b767",
-        "\"3500.50\"",
-        "\"ETHUSDC\""
-      ],
-      "solidityCodeSnippet": "(bytes32 notaryKeyFingerprint, string memory method, string memory url, uint256 tlsTimestamp, bytes32 extractionHash, string memory extractedValue0, string memory extractedValue1) = abi.decode(journalData, (bytes32, string, string, uint256, bytes32, string, string))"
-    }
+    "journalDataAbi": "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af..."
   }
 }
 ```
 
-The `journalDataAbi` contains the ABI-encoded tuple with all public outputs. The `journalDecodeInfo` provides helpful information for decoding this data in Solidity:
+The `journalDataAbi` contains the ABI-encoded tuple with all public outputs.
 
-- **`journalTypes`**: Lists the Solidity types in order (useful for verification)
-- **`journalValues`**: Shows the actual values for debugging/display purposes
-- **`solidityCodeSnippet`**: Provides ready-to-use Solidity code you can copy directly into your contract
+To obtain decoding helpers (types, values, and ready-to-use Solidity snippet), call [`POST /journal-decode-info`](/blockchain/rest-api/journal-decode-info) with the same request body.
 
 When decoded in Solidity using the provided snippet, the `journalDataAbi` will provide:
 - `notaryKeyFingerprint`: Fingerprint of the notary's public key
