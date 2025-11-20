@@ -186,6 +186,8 @@ export EXPECTED_URL=https://api.github.com/graphql
 
 **Environment Variable Explanations:**
 
+- **`ZK_PROVER_GUEST_ID`**: The RISC Zero guest program ID used by the ZK Prover Server. This identifies the specific program that generated the ZK proof and is required for on-chain verification. See the [guest-id endpoint documentation](/blockchain/rest-api/guest-id) for details.
+
 - **`NOTARY_KEY_FINGERPRINT`**: A cryptographic fingerprint of vlayer's notary key used to sign web proofs. This ensures proofs originate from vlayer's trusted notary service. The contract validates that submitted proofs match this fingerprint to prevent forgery.
 
 - **`QUERIES_HASH`**: A `keccak256` hash computed from the extraction configuration (source, format, and query strings) used during ZK proof compression. For the GitHub example, this includes the source (`"response.body"`), format (`"jmespath"`), and queries (`"data.repository.nameWithOwner"`, `"data.user.login"`, `"data.mergedPRs.issueCount"`). The contract verifies this hash matches the extraction config used during proof generation, preventing query substitution attacks. See the [queries hash calculation documentation](/blockchain/rest-api/compress-web-proof#queries-hash-calculation) for details.
@@ -219,7 +221,7 @@ Add to `.env` in `contracts/`:
 ```bash
 SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/<your_key>
 PRIVATE_KEY=0x<your_private_key>
-ZK_PROVER_GUEST_ID="0xd4759baae1296d344b129ddd497a889760d5c2171ab98332a1427df0ffec6898"
+ZK_PROVER_GUEST_ID="0xd4759baae1296d344b129ddd497a889760d5c2171ab98332a1427df0ffec6898" # Get latest from /api/v0/guest-id endpoint
 NOTARY_KEY_FINGERPRINT=0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af # vlayer notary key fingerprint
 QUERIES_HASH=0x<hash> # Hash of JMESPath extraction queries
 EXPECTED_URL=https://api.github.com/graphql

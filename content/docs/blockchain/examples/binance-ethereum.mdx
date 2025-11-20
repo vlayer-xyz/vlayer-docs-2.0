@@ -115,6 +115,9 @@ import {IRiscZeroVerifier} from "risc0/contracts/IRiscZeroVerifier.sol";
 
 contract BinancePriceOracle {
     IRiscZeroVerifier public immutable verifier;
+    
+    /// @notice RISC Zero guest program ID for ZK proof verification
+    /// @dev Get the latest guest ID from /api/v0/guest-id endpoint: https://zk-prover.vlayer.xyz/api/v0/guest-id
     bytes32 public constant IMAGE_ID = 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef;
     
     bytes32 public immutable expectedNotaryKeyFingerprint;
