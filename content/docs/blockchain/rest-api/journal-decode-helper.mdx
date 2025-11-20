@@ -1,16 +1,24 @@
 ---
-title: POST /journal-decode-info
+title: POST /debug/journal-decode-helper
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
-# POST /api/v0/journal-decode-info
+# POST /api/v0/debug/journal-decode-helper
+
+<Callout type="warn" title="Development Tool Only">
+  This endpoint is for **debugging and development purposes only**. It provides
+  helper information for decoding journal data in Solidity but does NOT generate
+  verifiable ZK proofs. Use
+  [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) to obtain
+  on-chain verifiable ZK proofs for production.
+</Callout>
 
 Returns helper data to decode `journalDataAbi` from the ZK Prover's `/compress-web-proof` response.
 
 ## Request Body
 
-Same as [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) — pass the Web Proof `presentation` and optional `extraction` config. The endpoint performs a dry run (verification + extraction) and derives decode info.
+Same as [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) — pass the Web Proof `presentation` and optional `extraction` config. The endpoint performs a dry run (verification + extraction) and derives decode helper information.
 
 ## Response Body
 
@@ -33,7 +41,7 @@ Same as [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) — pas
 ## Example
 
 ```bash
-curl -X POST https://zk-prover.vlayer.xyz/api/v0/journal-decode-info \
+curl -X POST https://zk-prover.vlayer.xyz/api/v0/debug/journal-decode-helper \
   -H "Content-Type: application/json" \
   -d '{
     "presentation": { "data": "...", "version": "0.1.0-alpha.12", "meta": { "notaryUrl": "..." } },
@@ -47,7 +55,15 @@ Response:
 {
   "success": true,
   "data": {
-    "journalTypes": ["bytes32", "string", "string", "uint256", "bytes32", "string", "string"],
+    "journalTypes": [
+      "bytes32",
+      "string",
+      "string",
+      "uint256",
+      "bytes32",
+      "string",
+      "string"
+    ],
     "journalValues": [
       "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af",
       "\"GET\"",
@@ -62,9 +78,3 @@ Response:
   }
 }
 ```
-
-<Callout type="info">
-This endpoint returns <code>journalDataAbi</code> along with decode helpers. Use this for development and testing to see decoded data before calling <code>/compress-web-proof</code> for production ZK proof generation.
-</Callout>
-
-
