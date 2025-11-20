@@ -74,6 +74,8 @@ The `journalDataAbi` is encoded as tuple parameters in the following order:
 ```bash
 curl -X POST https://zk-prover.vlayer.xyz/api/v0/compress-web-proof \
   -H "Content-Type: application/json" \
+  -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
+  -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
   -d '{
     "presentation": {
       "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
@@ -89,6 +91,10 @@ curl -X POST https://zk-prover.vlayer.xyz/api/v0/compress-web-proof \
     }
   }'
 ```
+
+<Callout type="info">
+The included credentials are for limited public use. For production use, please contact our team.
+</Callout>
 
 Response:
 
