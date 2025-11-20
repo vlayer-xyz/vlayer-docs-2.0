@@ -82,13 +82,8 @@ The `journalDataAbi` is encoded as tuple parameters in the following order:
 )
 ```
 
-The response includes a `journalDecodeInfo` object that helps you decode this data:
-- **`journalTypes`**: Array of Solidity type names in the correct order
-- **`journalValues`**: Array of actual values (formatted for display/debugging)
-- **`solidityCodeSnippet`**: Complete `abi.decode` statement with variable names and types
-
 <Callout type="info">
-**Important**: The order and types in your `abi.decode` must exactly match the order of your extraction queries and their detected types. If you extract `["price", "symbol"]`, you must decode them in that same order. The `solidityCodeSnippet` ensures this order is correct.
+**Important**: The order and types in your `abi.decode` must exactly match the order of your extraction queries and their detected types. If you extract `["price", "symbol"]`, you must decode them in that same order..
 </Callout>
 
 ## Example
