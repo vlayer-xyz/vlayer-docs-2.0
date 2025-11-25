@@ -1,0 +1,128 @@
+---
+title: Tutorial - Deploying RiscZeroMockVerifier Contract
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# RiscZeroMockVerifier
+
+The [`RiscZeroMockVerifier`](https://github.com/risc0/risc0-ethereum/blob/d04a053901c9cb4e0f6cc599d5b4f21dccdbb3f8/contracts/src/test/RiscZeroMockVerifier.sol#L37) is a test-only mock verifier from the RISC Zero library. It implements the [`IRiscZeroVerifier`](https://dev.risczero.com/api/blockchain-integration/contracts/verifier) interface but bypasses cryptographic verification, making it ideal for development and testing workflows.
+
+## Why Use RiscZeroMockVerifier?
+
+Generating real ZK proofs is computationally expensive and time-consuming. During development and testing, you often need to verify that your contract logic works correctly without the overhead of proof generation.
+
+`RiscZeroMockVerifier` solves this by:
+
+- **Faster iteration**: Test your contract logic without waiting for real proof generation
+- **Simplified testing**: Create mock proofs that pass verification checks
+- **Local development**: Run integration tests without deploying production infrastructure
+
+<Callout type="warning">
+`RiscZeroMockVerifier` does not perform cryptographic verification. Never use it in production environments. For mainnet deployments, use `RiscZeroGroth16Verifier` instead.
+</Callout>
+
+## How It Works
+
+The mock verifier performs structural validation rather than cryptographic verification:
+
+1. **Selector-based routing**: The verifier accepts a 4-byte selector in its constructor that routes proofs to the correct implementation. A selector is a 4-byte identifier (like `0x00000000`) that the verifier uses to match incoming proofs with the expected proof format. This allows RISC Zero to support multiple proof formats and versions. You can pass a custom selector when deploying if you need to match a specific proof format. See the [version management design](https://github.com/risc0/risc0-ethereum/blob/release-3.0/contracts/version-management-design.md) for details on how RISC Zero handles verifier versioning.
+
+2. **Structural checks**: Instead of verifying cryptographic proofs, it checks that the seal starts with the expected selector and matches the claim digest.
+
+3. **Mock proof generation**: The `mockProve()` function creates mock receipts that pass the verifier's checks.
+
+For the full implementation, see the [RiscZeroMockVerifier source code](https://github.com/risc0/risc0-ethereum/blob/d04a053901c9cb4e0f6cc599d5b4f21dccdbb3f8/contracts/src/test/RiscZeroMockVerifier.sol#L37).
+
+## Deploying RiscZeroMockVerifier
+
+When you create a vlayer verifier contract, it must [implement the RISC Zero verifier interface](https://github.com/vlayer-xyz/zk-github-contribution-verifier/blob/f9a58e7270307a7da6cb18f1801f0e1e2e4a8af0/contracts/src/GitHubContributionVerifier.sol#L4) so it can consume receipts produced by your prover. If you want to skip deploying your own verifier, RISC Zero publishes predeployed verifier contracts for supported networks; see the addresses listed in their [docs](https://dev.risczero.com/api/blockchain-integration/contracts/verifier). Otherwise, you can deploy your own mock verifier for testing.
+
+## Manual Forge deployment
+
+You can deploy the `RiscZeroMockVerifier` contract using the [deploy-risc0-example](https://github.com/vlayer-xyz/deploy-risc0-example) repository, which provides a deployment script for Sepolia or any EVM-compatible chain.
+
+### Prerequisites
+
+- Node.js 18+ and npm/pnpm
+- Foundry (`forge`) for compiling the contract artifact
+- RPC endpoint for your target chain (e.g., Sepolia Infura/Alchemy URL)
+- A funded deployer private key for that chain
+
+### Install dependencies
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/vlayer-xyz/deploy-risc0-example.git
+cd deploy-risc0-example
+npm install
+```
+
+### Build the verifier artifact
+
+Compile the RiscZeroMockVerifier contract:
+
+```bash
+forge build --contracts lib/risc0-ethereum/contracts/src/test/RiscZeroMockVerifier.sol
+```
+
+### Configure environment
+
+Create a `.env` file in the project root with the following variables:
+
+```bash
+RPC_URL=https://sepolia.infura.io/v3/<your-project-id>
+PRIVATE_KEY=0xabc...   # funded deployer private key
+```
+
+### Deploy to Sepolia
+
+Run the deployment script:
+
+```bash
+npx ts-node deploy.ts
+```
+
+### Deploy to any chain
+
+To deploy to a different network:
+
+- Swap `RPC_URL` for the target chain's endpoint
+- Use a private key funded on that network
+- Optionally adjust `--gas-price` if the chain doesn't support EIP-1559
+
+### Deployment options
+
+The deployment script supports several options:
+
+- `--rpc-url` / `RPC_URL` / `ETH_RPC_URL`: RPC endpoint for the target network
+- `--private-key` / `PRIVATE_KEY` / `DEPLOYER_KEY`: Deployer's private key
+- `--selector` / `SELECTOR`: 4-byte selector for proof routing (defaults to `0x00000000`). You can pass a custom selector if you need to match a specific proof format or version.
+- `--artifact-path` / `ARTIFACT_PATH`: Path to the compiled contract artifact
+- `--gas-price` / `GAS_PRICE`: Gas price in gwei (optional)
+- `--confirmations` / `CONFIRMATIONS`: Number of block confirmations to wait (defaults to 1)
+
+Example with custom selector:
+
+```bash
+SELECTOR=0x12345678 npx ts-node deploy.ts
+```
+
+## Using the Deployed Verifier
+
+Once deployed, pass the mock verifier address to any contract that requires an `IRiscZeroVerifier`:
+
+```solidity
+contract MyContract {
+    IRiscZeroVerifier public verifier;
+
+    constructor(address _verifier) {
+        verifier = IRiscZeroVerifier(_verifier);
+    }
+
+    function verifyProof(bytes calldata seal, bytes32 imageId, bytes32 journalDigest) external {
+        verifier.verify(seal, imageId, journalDigest);
+    }
+}
+```

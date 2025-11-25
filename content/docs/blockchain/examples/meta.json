@@ -1,4 +1,4 @@
 {
   "title": "Examples",
-  "pages": ["binance-ethereum", "zk-github-example"]
+  "pages": ["binance-ethereum", "zk-github-example", "verifier-contract"]
 }
