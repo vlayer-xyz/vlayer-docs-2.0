@@ -1,6 +1,35 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { convertToCoreMessages, streamText } from 'ai';
+import { cookies } from 'next/headers';
+import { prisma } from '@/lib/prisma';
 import { getLLMText, source } from '@/lib/source';
+
+function extractTextContent(message: { content?: unknown; parts?: unknown }): string {
+  // Prefer "parts" (used by UIMessage) then "content" (used by provider messages)
+  const segments = Array.isArray(message.parts)
+    ? message.parts
+    : Array.isArray(message.content)
+      ? message.content
+      : [];
+
+  if (!Array.isArray(segments)) return '';
+
+  return segments
+    .map((part) => {
+      if (typeof part === 'string') return part;
+      if (part && typeof part === 'object') {
+        if ('text' in part && typeof (part as { text?: unknown }).text === 'string') {
+          return (part as { text: string }).text;
+        }
+        if ('content' in part && typeof (part as { content?: unknown }).content === 'string') {
+          return (part as { content: string }).content;
+        }
+      }
+      return '';
+    })
+    .filter(Boolean)
+    .join('');
+}
 
 // Anthropic client will be created per request with validated API key
 
@@ -49,6 +78,28 @@ export async function POST(req: Request) {
       );
     }
 
+    const cookieStore = await cookies();
+    let sessionId = cookieStore.get('chat_session_id')?.value;
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+    }
+
+    const referrer = req.headers.get('referer') ?? undefined;
+    let path: string | undefined;
+    if (referrer) {
+      try {
+        path = new URL(referrer).pathname;
+      } catch {
+        path = undefined;
+      }
+    }
+
+    const userAgent = req.headers.get('user-agent') ?? undefined;
+
+    const lastUser = messages
+      .filter((msg: { role?: string }) => msg.role === 'user')
+      .at(-1);
+
     // Get all documentation content
     let docsContext;
     try {
@@ -59,6 +110,7 @@ export async function POST(req: Request) {
     }
 
     // Use Claude Sonnet model
+    const startedAt = Date.now();
     const result = streamText({
       model: anthropicClient('claude-sonnet-4-5-20250929'),
       system: `You are a helpful documentation assistant. Use the following documentation to answer questions accurately and concisely. Always cite specific sections when referencing the documentation.
@@ -66,6 +118,42 @@ export async function POST(req: Request) {
 Documentation:
 ${docsContext}`,
       messages: convertToCoreMessages(messages),
+      onFinish: async () => {
+        const userText = (() => {
+          if (!lastUser) return '';
+          if (typeof (lastUser as { content?: unknown }).content === 'string') {
+            return (lastUser as { content?: string }).content ?? '';
+          }
+          return extractTextContent(lastUser as { content?: unknown; parts?: unknown });
+        })();
+
+        try {
+          await prisma.chatSession.upsert({
+            where: { id: sessionId },
+            update: { lastActiveAt: new Date() },
+            create: {
+              id: sessionId,
+              path,
+              userAgent,
+              referrer,
+            },
+          });
+
+          const userContent = userText.trim();
+          if (userContent.length > 0) {
+            await prisma.chatMessage.create({
+              data: {
+                sessionId,
+                role: 'user',
+                content: userContent,
+                createdAt: new Date(startedAt),
+              },
+            });
+          }
+        } catch (error) {
+          console.error('Failed to log chat messages:', error);
+        }
+      },
       onError: (error) => {
         console.error('Stream error:', error);
         // Log specific model error
@@ -76,7 +164,17 @@ ${docsContext}`,
       },
     });
 
-    return result.toUIMessageStreamResponse();
+    const response = result.toUIMessageStreamResponse();
+    if (sessionId) {
+      const maxAge = 60 * 60 * 24 * 30; // 30 days
+      const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+      response.headers.append(
+        'Set-Cookie',
+        `chat_session_id=${sessionId}; Path=/; Max-Age=${maxAge}; HttpOnly; SameSite=Lax${secure}`,
+      );
+    }
+
+    return response;
   } catch (error) {
     console.error('Chat API error:', error);
     return new Response(
