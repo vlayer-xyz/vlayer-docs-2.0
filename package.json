@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "fumadocs-mdx && next build",
+    "build": "prisma generate && fumadocs-mdx && next build",
     "dev": "next dev --turbo",
     "start": "next start",
     "lint": "eslint"
