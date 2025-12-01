@@ -133,6 +133,7 @@ ${docsContext}`,
             update: { lastActiveAt: new Date() },
             create: {
               id: sessionId,
+              lastActiveAt: new Date(),
               path,
               userAgent,
               referrer,

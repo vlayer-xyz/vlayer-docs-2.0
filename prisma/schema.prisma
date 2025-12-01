@@ -26,10 +26,10 @@ model ChatSession {
 model ChatMessage {
   id         String      @id @default(cuid())
   createdAt  DateTime    @default(now())
-  role       String
-  content    String
+  role       String      @db.VarChar(20)
+  content    String      @db.Text
   sessionId  String
-  session    ChatSession @relation(fields: [sessionId], references: [id])
+  session    ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt])
   @@index([role, createdAt])
