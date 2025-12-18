@@ -45,7 +45,7 @@ nav a + div,
 
 /* Active navigation styling - ONLY for actual active links */
 a[data-active="true"] {
-  color: #915BF8 !important;
+  color: #A58ACE !important;
   font-family: Figtree !important;
   font-weight: 700 !important;
   font-size: 14px !important;
@@ -80,7 +80,7 @@ body {
 
 /* Headings */
 h1 {
-  color: #915BF8 !important;
+  color: #A58ACE !important;
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
@@ -127,7 +127,7 @@ main a:not(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a),
 article a:not(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a),
 p a, 
 li a {
-  color: #915BF8 !important;
+  color: #A58ACE !important;
   text-decoration: none;
 }
 
@@ -153,7 +153,7 @@ div[class*="rounded-xl"][class*="bg-fd-card"][class*="p-3"] {
   min-height: 48px !important;
   /* width: fit-content !important; */
   /* background-color: #16181F!important; */
-  border-left: 2px solid #915BF8 !important;
+  border-left: 2px solid #A58ACE !important;
   border-top: none !important;
   border-right: none !important;
   border-bottom: none !important;
@@ -175,7 +175,7 @@ div[class*="flex-col"] > p[class*="font-medium"] {
   font-weight: 700 !important;
   font-size: 16px !important;
   line-height: 120% !important;
-  color: #915BF8 !important;
+  color: #A58ACE !important;
   margin: 0 !important;
 }
 
@@ -292,8 +292,8 @@ strong, b {
 
 /* Override fumadocs warning callout color from yellow to purple */
 :root {
-  --color-fd-warning: #915BF8;
-  --color-fd-info: #915BF8;
+  --color-fd-warning: #A58ACE;
+  --color-fd-info: #A58ACE;
 }
 
 /* Bottom navigation cards (previous/next) - match sidebar color */
