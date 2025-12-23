@@ -1,0 +1,66 @@
+---
+title: Usage
+---
+<Callout type="warn">
+**Under Development**: This SDK is currently in development. Documentation and API may change. For production use, please contact our team.
+</Callout>
+# Requesting a proof
+The SDK should be initialized before requesting a proof. It should be kept until all proofs are finished.
+```swift
+import SwiftUI
+import VouchSDK
+
+@main
+struct SDKDemoApp: App {
+  let sdk = VouchSDK.SDK()
+
+  var body: some Scene {
+    WindowGroup {
+      ContentView(sdk: sdk)
+    }
+  }
+}
+```
+To request a proof call the `start` method on the SDK object. It returns a SwiftUI view that can be used inside your application (e.g. in a popover).
+```swift
+  yourView
+    .popover(isPresented: $popoverVisible) {
+      sdk.start(
+        dataSourceId: "DATA_SOURCE_ID",
+        customerId: "CUSTOMER_ID",
+        webhookUrl: "WEBHOOK_URL",
+        inputs: [
+            "INPUT1_NAME": "INPUT1_VALUE",
+            "INPUT2_NAME": "INPUT2_VALUE",
+            "INPUT3_NAME": "INPUT3_VALUE"
+        ],
+        callback: { result in
+          switch result {
+          case .success(let success):
+            print("Proof id: \(success.proofId)")
+          case .failure(let error):
+            print("Proof with id failed: \(error.proofId), reason: \(error.reason)")
+          }
+          popoverVisible = false
+        }
+      )
+    }
+```
+# Arguments
+* dataSourceId - id of a data source that you want to prove. To find the right data source for your needs check `https://app.getvouch.io/catalog`.
+* customerId - your customer id. If you don't have one contact our team.
+* webhookUrl - url to your webhook where the proof will be sent.
+* inputs - a key-value dictionary of inputs specific to the selected data source. For more details check your data source on `https://app.getvouch.io/catalog`.
+* callback - a closure that will be called when the proof has been submitted or has failed. Both success and failure provide id of the proof. Failure also provides a reason.
+## Failure reasons
+* dataSourceOrCustomerNotFound - either data source or customer id does not match any known entity.
+* outdatedVersion - a newer version of the SDK is available and must be downloaded.
+* creatingProofRequestFailed - the SDK was unable to request a proof.
+* backgroundTimeout - the user kept the application in the background for too long. The application needs to be kept in the active state for the duration of the proof.
+* requestTooLarge - request caught by the SDK is too large and can't be notarized.
+* dataSourceMisconfigured - data source contains unsupported configuration.
+* provingFailed - SDK failed to notarize the request.
+* proofUploadFailed - SDK failed to upload the proof to the Vouch server.
+* attachmentReuploadFailed - SDK failed to upload attachments to your server.
+* proofIdTaken - SDK failed to upload the proof to the Vouch server because a proof with the same id already exists.
+* networkConnectionLost - the phone lost Internet connection.

@@ -1,0 +1,45 @@
+---
+title: Installation
+---
+<Callout type="warn">
+**Under Development**: This SDK is currently in development. Documentation and API may change. For production use, please contact our team.
+</Callout>
+
+# Swift Package Manager
+## Requirements
+* Xcode 16.4 or above
+* iOS 17
+
+## Xcode
+In Xcode select `File/Add Packages` in the menu bar.
+![Xcode menu](/ios_xcode_menu.png)
+Search for the SDK by repo's URL:
+`https://github.com/vlayer-xyz/vouch-ios-sdk`
+Set *Dependency Rule* to your liking (`Up to Next Major Version` is probably the safest default).
+Then, select `Add Package`.
+![Search for the package](/ios_search_packages.png)
+Make sure that vouch-ios-sdk and your target are selected.
+![Add package](/ios_add_package.png)
+
+## Package.swift
+Add `vouch-ios-sdk` dependency to your Package.swift as follows:
+```swift
+dependencies: [
+    .package(
+        url: "https://github.com/vlayer-xyz/vouch-ios-sdk",
+        .upToNextMajor(from: "0.0.2")
+    ),
+    // Your other dependencies...
+]
+```
+Then add it to your target:
+```swift
+.target(
+    name: "YourTarget",
+    dependencies: [
+        .product(name: "vouch-ios-sdk", package: "vouch-ios-sdk"),
+        // Your other dependencies...
+    ]
+)
+```
+
