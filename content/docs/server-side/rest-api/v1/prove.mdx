@@ -21,7 +21,6 @@ Generate a cryptographic Web Proof by making a notarized HTTP request to the spe
 * `headers`: Array of HTTP headers formatted as `"Header-Name: Header-Value"`
 * `body`: Request body data for POST requests as a string
 * `notaryUrl`: URL of the notary server for TLS notarization. Defaults to vlayer's test notary server
-* `host`: Optional override for the target host
 * `maxRecvData`: Optional maximum number of bytes to receive from the server
 * `redaction`: Optional array of redaction rules for controlling which request headers are included in the Web Proof. Supports two modes:
   * `request.headers`: Specify headers to redact (hide) from the proof - all other headers are revealed
@@ -151,5 +150,3 @@ This example demonstrates how to make an authenticated Gmail API request while r
 <Callout type="info">
 The included credentials are for limited public use. For production use, please contact our team.
 </Callout>
-
-

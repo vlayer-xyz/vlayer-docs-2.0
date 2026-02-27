@@ -1,4 +1,4 @@
 {
   "title": "REST API",
-  "pages": ["prove", "verify-web-proof"]
+  "pages": ["v1", "v2"]
 }
