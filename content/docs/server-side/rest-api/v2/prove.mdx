@@ -71,7 +71,7 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
 * **`error.code`**: Machine-readable error code. Possible values:
   * `INVALID_REQUEST` — malformed request body (400)
   * `INTERNAL_SERVER_ERROR` — server-side failure (500)
-* **`error.message`**: Human-readable description. For server errors, a generic message is returned regardless of the underlying cause
+* **`error.message`**: Human-readable description. The values returned here may change over time, use `error.code` for stable error indication
 
 ## Examples
 
