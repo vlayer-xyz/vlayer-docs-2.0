@@ -20,7 +20,7 @@ First, generate a Web Proof for an API call:
 <Tabs items={['bash', 'javascript']}>
   <Tab value="bash">
     ```bash
-    curl -X POST https://web-prover.vlayer.xyz/api/v1/prove \
+    curl -X POST https://web-prover.vlayer.xyz/api/v2.0/prove \
       -H "Content-Type: application/json" \
       -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
       -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
@@ -33,7 +33,7 @@ First, generate a Web Proof for an API call:
   
   <Tab value="javascript">
     ```javascript
-    const response = await fetch('https://web-prover.vlayer.xyz/api/v1/prove', {
+    const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/prove', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ Now verify the generated Web Proof by sending the json from the `/prove` respons
 <Tabs items={['bash', 'javascript']}>
   <Tab value="bash">
     ```bash
-    curl -X POST https://web-prover.vlayer.xyz/api/v1/verify \
+    curl -X POST https://web-prover.vlayer.xyz/api/v2.0/verify \
       -H "Content-Type: application/json" \
       -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
       -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
@@ -94,7 +94,7 @@ Now verify the generated Web Proof by sending the json from the `/prove` respons
   
   <Tab value="javascript">
     ```javascript
-    const response = await fetch('https://web-prover.vlayer.xyz/api/v1/verify', {
+    const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
