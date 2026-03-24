@@ -1,0 +1,51 @@
+---
+title: POST /verify-zk-proof
+description: Verify a ZK proof (v2)
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# POST /api/v2.0/evm/verify-zk-proof
+
+<Callout type="warn">
+**Not Yet Implemented**: This endpoint currently returns `501 Not Implemented`. ZK proof verification is planned for a future release. For on-chain verification, use the [RISC Zero Verifier Router](/blockchain/examples/verifier-contract) directly in your smart contract.
+</Callout>
+
+Verify a previously generated ZK proof.
+
+## Authentication
+
+Requests require both headers:
+
+* `X-Client-Id`: Your client ID
+* `Authorization: Bearer <api-key>`: Your API key
+
+## Current Response
+
+All requests return `501 Not Implemented`:
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": false,
+  "error": {
+    "code": "NOT_IMPLEMENTED",
+    "message": "ZK proof verification is not yet implemented"
+  }
+}
+```
+
+## Fake Mode
+
+A fake-mode variant is available at `/api/v2.0/fake/evm/verify-zk-proof`. It also returns `501 Not Implemented`.
+
+## Alternative: On-Chain Verification
+
+Until this endpoint is implemented, verify ZK proofs directly on-chain using the [RISC Zero Verifier Router](https://dev.risczero.com/api/blockchain-integration/contracts/verifier):
+
+```solidity
+IRiscZeroVerifier verifier = IRiscZeroVerifier(verifierAddress);
+verifier.verify(seal, IMAGE_ID, sha256(journalData));
+```
+
+See the [verifier contract tutorial](/blockchain/examples/verifier-contract) for deployment instructions, or the [Binance on Ethereum example](/blockchain/examples/binance-ethereum) for a complete end-to-end flow.

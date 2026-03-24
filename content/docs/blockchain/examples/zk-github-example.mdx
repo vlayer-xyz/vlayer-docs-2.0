@@ -186,11 +186,11 @@ export EXPECTED_URL=https://api.github.com/graphql
 
 **Environment Variable Explanations:**
 
-- **`ZK_PROVER_GUEST_ID`**: The RISC Zero guest program ID used by the ZK Prover Server. This identifies the specific program that generated the ZK proof and is required for on-chain verification. See the [guest-id endpoint documentation](/blockchain/rest-api/guest-id) for details.
+- **`ZK_PROVER_GUEST_ID`**: The RISC Zero guest program ID used by the ZK Prover Server. This identifies the specific program that generated the ZK proof and is required for on-chain verification. See the [guest-id endpoint documentation](/blockchain/rest-api/v2/guest-id) for details.
 
 - **`NOTARY_KEY_FINGERPRINT`**: A cryptographic fingerprint of vlayer's notary key used to sign web proofs. This ensures proofs originate from vlayer's trusted notary service. The contract validates that submitted proofs match this fingerprint to prevent forgery.
 
-- **`QUERIES_HASH`**: A `keccak256` hash computed from the extraction configuration (source, format, and query strings) used during ZK proof compression. For the GitHub example, this includes the source (`"response.body"`), format (`"jmespath"`), and queries (`"data.repository.nameWithOwner"`, `"data.user.login"`, `"data.mergedPRs.issueCount"`). The contract verifies this hash matches the extraction config used during proof generation, preventing query substitution attacks. See the [queries hash calculation documentation](/blockchain/rest-api/compress-web-proof#queries-hash-calculation) for details.
+- **`QUERIES_HASH`**: A `keccak256` hash computed from the extraction configuration (source, format, and query strings) used during ZK proof compression. For the GitHub example, this includes the source (`"response.body"`), format (`"jmespath"`), and queries (`"data.repository.nameWithOwner"`, `"data.user.login"`, `"data.mergedPRs.issueCount"`). The contract verifies this hash matches the extraction config used during proof generation, preventing query substitution attacks. See the [extraction hash calculation documentation](/blockchain/rest-api/v2/compress-web-proof#extraction-hash-calculation) for details.
 
 **3. Deploy Contract**
 

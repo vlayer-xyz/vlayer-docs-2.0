@@ -10,7 +10,7 @@ import { Callout } from "fumadocs-ui/components/callout";
   This endpoint is for **debugging and development purposes only**. It provides
   helper information for decoding journal data in Solidity but does NOT generate
   verifiable ZK proofs. Use
-  [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) to obtain
+  [`/compress-web-proof`](/blockchain/rest-api/v0/compress-web-proof) to obtain
   on-chain verifiable ZK proofs for production.
 </Callout>
 
@@ -18,7 +18,7 @@ Returns helper data to decode `journalDataAbi` from the ZK Prover's `/compress-w
 
 ## Request Body
 
-Same as [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) — pass the Web Proof `presentation` and optional `extraction` config. The endpoint performs a dry run (verification + extraction) and derives decode helper information.
+Same as [`/compress-web-proof`](/blockchain/rest-api/v0/compress-web-proof) — pass the Web Proof `presentation` and optional `extraction` config. The endpoint performs a dry run (verification + extraction) and derives decode helper information.
 
 ## Response Body
 

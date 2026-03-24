@@ -26,7 +26,7 @@ Generate a ZK proof from a Web Proof. The process:
 
 ## Request Body
 
-* `presentation`: Web Proof object (direct output from [Web Prover Server `/prove`](/server-side/rest-api/prove))
+* `presentation`: Web Proof object (direct output from [Web Prover Server `/prove`](/server-side/rest-api/v1/prove))
   * `data`: Hex-encoded proof data
   * `version`: TLSN protocol version
   * `meta`: Metadata about the verification
@@ -129,7 +129,7 @@ Response:
 
 The `journalDataAbi` contains the ABI-encoded tuple with all public outputs.
 
-To obtain decoding helpers (types, values, and ready-to-use Solidity snippet), call [`POST /debug/journal-decode-helper`](/blockchain/rest-api/journal-decode-helper) with the same request body.
+To obtain decoding helpers (types, values, and ready-to-use Solidity snippet), call [`POST /debug/journal-decode-helper`](/blockchain/rest-api/v0/journal-decode-helper) with the same request body.
 
 When decoded in Solidity using the provided snippet, the `journalDataAbi` will provide:
 - `notaryKeyFingerprint`: Fingerprint of the notary's public key
