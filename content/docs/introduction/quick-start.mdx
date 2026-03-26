@@ -1,0 +1,73 @@
+---
+title: Quick Start Guide
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## vlayer dashboard
+
+Get started at the [vlayer dashboard](https://dashboard-20.vlayer.xyz/). This is where you manage your account, monitor proof usage, and access your API keys for server-side proofs and ZK proofs.
+
+### Free plan
+
+We're launching with a free plan that includes:
+
+- **Unlimited web proofs**
+- **1,000 ZK proof vgas units** per month
+
+The free trial is valid for **one month**, after which your allowance expires. There is no self-serve paid upgrade at launch — once you reach your limit, [contact our sales team](https://dashboard-20.vlayer.xyz/) to continue.
+
+## API keys
+
+All requests to the vlayer Web Prover API are authenticated using a single API key issued from the [vlayer dashboard](https://dashboard-20.vlayer.xyz/).
+
+### Creating API keys
+
+1. Sign in to the [vlayer dashboard](https://dashboard-20.vlayer.xyz/)
+2. Navigate to the **API Keys** section
+3. Click **Add new key** and give it a name
+4. Copy the key value — it is only shown once
+
+![API Keys dashboard](/api_keys.png)
+
+### Using API keys
+
+Add your key to a `.env.local` file in your project:
+
+```bash
+WEB_PROVER_API_KEY=ak_your_key_value
+```
+
+Then pass it as a Bearer token in every request to the vlayer API:
+
+```typescript
+const headers = {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${process.env.WEB_PROVER_API_KEY}`,
+};
+```
+
+### Example use case
+
+**Prove a Binance price feed (server-side)**
+
+Cryptographically prove the current ETH/USDC exchange info from Binance's public API:
+
+```typescript
+// app/api/prove/route.ts
+const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/prove', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${process.env.WEB_PROVER_API_KEY}`,
+  },
+  body: JSON.stringify({
+    url: 'https://data-api.binance.vision/api/v3/exchangeInfo?symbol=ETHUSDC',
+    headers: [],
+  }),
+});
+```
+
+<Callout type="warn">
+  Never include your API key in client-side (browser) code. Always call the vlayer API from a server-side route to keep your key private.
+</Callout>
