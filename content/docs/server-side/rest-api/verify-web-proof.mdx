@@ -22,6 +22,8 @@ Verify a previously generated Web Proof. The verification process:
   * **Automatic decoding** - Handles chunked transfer encoding and gzip compression automatically
   * **Raw transcript access** - Provides hex-encoded raw transcript bytes for verification
 
+A complete verification requires checking both the cryptographic proof and the `notaryKeyFingerprint` — the proof confirms the TLS session's integrity, while the fingerprint identifies which notary signed it. Proofs notarized through vlayer's notary service carry a known, trusted fingerprint and require no additional notary validation; if you use a third-party notary, you must independently confirm that the returned `notaryKeyFingerprint` matches your notary's expected public key before trusting the proof.
+
 ## Request Body Parameters
 
 Send the presentation object received from `/api/v1/prove` directly as the request body:
