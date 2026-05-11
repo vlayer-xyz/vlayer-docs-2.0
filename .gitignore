@@ -1,9 +1,5 @@
 # deps
 /node_modules
-package-lock.json
-bun.lock
-yarn.lock
-pnpm-lock.yaml
 
 # generated content
 .contentlayer
