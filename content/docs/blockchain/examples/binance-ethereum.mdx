@@ -24,7 +24,7 @@ The workflow consists of three main steps:
 First, we need a Web Proof of Binance API data. This step is detailed in our [Binance Web Proof example](/server-side/examples/binance). The Web Proof contains the complete HTTP request/response data from the Binance API.
 
 ```bash
-curl -X POST https://web-prover.vlayer.xyz/api/v1/prove \
+curl -X POST https://web-prover.vlayer.xyz/api/v2.0/prove \
   -H "Content-Type: application/json" \
   -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
   -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
@@ -53,8 +53,10 @@ This Web Proof contains the ETH/USDC price data from Binance.
 Next, we use the ZK Prover Server to convert the Web Proof into a ZK proof, extracting the specific price data we want to put on-chain. Pass the entire Web Proof object from Step 1 as the `presentation` parameter:
 
 ```bash
-curl -X POST https://zk-prover.vlayer.xyz/api/v0/compress-web-proof \
+curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/evm/compress-web-proof \
   -H "Content-Type: application/json" \
+  -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
+  -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
   -d '{
     "presentation": {
       "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
@@ -88,8 +90,10 @@ The `journalDataAbi` contains ABI-encoded public outputs that will be decoded in
 Fetch decode helpers via a separate call:
 
 ```bash
-curl -X POST https://zk-prover.vlayer.xyz/api/v0/debug/journal-decode-helper \
+curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/debug/evm/journal-decode-helper \
   -H "Content-Type: application/json" \
+  -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
+  -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
   -d '{
     "presentation": {
       "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
@@ -127,7 +131,7 @@ contract BinancePriceOracle {
     IRiscZeroVerifier public immutable verifier;
     
     /// @notice RISC Zero guest program ID for ZK proof verification
-    /// @dev Get the latest guest ID from /api/v0/guest-id endpoint: https://zk-prover.vlayer.xyz/api/v0/guest-id
+    /// @dev Get the latest guest ID from /api/v2.0/evm/guest-id endpoint: https://zk-prover.vlayer.xyz/api/v2.0/evm/guest-id
     bytes32 public constant IMAGE_ID = 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef;
     
     bytes32 public immutable expectedNotaryKeyFingerprint;

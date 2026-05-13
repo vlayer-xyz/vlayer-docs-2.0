@@ -1,15 +1,12 @@
 ---
 title: POST /compress-web-proof
-
+description: Generate ZK proof from Web Proof (v2)
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
-<Callout type="warn">
-**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
-</Callout>
-
-# POST /api/v0/compress-web-proof
+# POST /api/v2.0/evm/compress-web-proof
 
 Generate a ZK proof from a Web Proof. The process:
 
@@ -24,7 +21,16 @@ Generate a ZK proof from a Web Proof. The process:
 * **Generates ZK proof** - Creates a zero-knowledge proof attesting to the Web Proof verification and extracted data
 * **Computes extraction hash** - Creates a cryptographic hash of the queries used for on-chain validation
 
+## Authentication
+
+Requests require both headers:
+
+* `X-Client-Id`: Your client ID
+* `Authorization: Bearer <api-key>`: Your API key
+
 ## Request Body
+
+All field names must be in camelCase. Unknown fields are rejected with a `400` error.
 
 * `presentation`: Web Proof object (direct output from [Web Prover Server `/prove`](/server-side/rest-api/prove))
   * `data`: Hex-encoded proof data
@@ -43,28 +49,51 @@ Generate a ZK proof from a Web Proof. The process:
 
 ### Success Response
 
-* `success`: Boolean indicating if the operation succeeded (always `true` for success responses)
-* `data`: Object containing the compressed proof data
-  * `zkProof`: Serialized ZK proof data (seal) - used to verify the proof on-chain
-  * `journalDataAbi`: ABI-encoded public outputs containing verified Web Proof data - used as the claim being proven
+```json
+{
+  "apiVersion": "v2.0",
+  "success": true,
+  "data": {
+    "zkProof": "0xffffffffa1b2c3d4e5f6...",
+    "journalDataAbi": "0xa7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af..."
+  }
+}
+```
+
+* **`apiVersion`**: API version string
+* **`success`**: `true`
+* **`data.zkProof`**: Serialized ZK proof data (seal) - used to verify the proof on-chain
+* **`data.journalDataAbi`**: ABI-encoded public outputs containing verified Web Proof data - used as the claim being proven
 
 <Callout type="info">
-Looking for decode info (types, values, Solidity snippet)? Use <code>POST /api/v0/debug/journal-decode-helper</code> with the same request body.
+Looking for decode info (types, values, Solidity snippet)? Use [`POST /api/v2.0/debug/evm/journal-decode-helper`](/blockchain/rest-api/journal-decode-helper) with the same request body.
 </Callout>
 
 ### Error Response
 
-* `success`: Boolean indicating failure (always `false` for error responses)
-* `error`: Object containing error details
-  * `code`: Error code string (e.g., `"INVALID_REQUEST"`, `"PROOF_GENERATION_FAILED"`)
-  * `message`: Human-readable error message
+```json
+{
+  "apiVersion": "v2.0",
+  "success": false,
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Invalid request: ..."
+  }
+}
+```
+
+* **`error.code`**: Machine-readable error code. Possible values:
+  * `INVALID_REQUEST` — malformed request body (400)
+  * `PROOF_GENERATION_FAILED` — proof generation failed (500)
+  * `UNAUTHORIZED` — missing or invalid credentials (401)
+* **`error.message`**: Human-readable description. The values returned here may change over time, use `error.code` for stable error indication
 
 ### Understanding journalDataAbi
 
 The `journalDataAbi` is an ABI-encoded tuple containing all the public outputs from the ZK proof. This is the data that was proven and will be decoded in your Solidity smart contract.
 
 <Callout type="info">
-**Quick Start**: Call `/debug/journal-decode-helper` with the same request to get a `solidityCodeSnippet`! It provides ready-to-use Solidity code that you can copy directly into your contract for decoding the journal data.
+**Quick Start**: Call [`/debug/evm/journal-decode-helper`](/blockchain/rest-api/journal-decode-helper) with the same request to get a `solidityCodeSnippet`! It provides ready-to-use Solidity code that you can copy directly into your contract for decoding the journal data.
 </Callout>
 
 #### Encoding Format
@@ -86,39 +115,70 @@ The `journalDataAbi` is encoded as tuple parameters in the following order:
 **Important**: The order and types in your `abi.decode` must exactly match the order of your extraction queries and their detected types. If you extract `["price", "symbol"]`, you must decode them in that same order.
 </Callout>
 
-## Example
+## Examples
 
 ### Extract Price and Symbol from JSON Response
 
-```bash
-curl -X POST https://zk-prover.vlayer.xyz/api/v0/compress-web-proof \
-  -H "Content-Type: application/json" \
-  -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
-  -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
-  -d '{
-    "presentation": {
-      "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
-      "version": "0.1.0-alpha.12",
-      "meta": {
-        "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
-      }
-    },
-    "extraction": {
-      "response.body": {
-        "jmespath": ["price", "symbol"]
-      }
-    }
-  }'
-```
+<Tabs items={['bash', 'javascript']}>
+  <Tab value="bash">
+    ```bash
+    curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/evm/compress-web-proof \
+      -H "Content-Type: application/json" \
+      -H "X-Client-Id: <your-client-id>" \
+      -H "Authorization: Bearer <your-api-key>" \
+      -d '{
+        "presentation": {
+          "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
+          "version": "0.1.0-alpha.12",
+          "meta": {
+            "notaryUrl": "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+          }
+        },
+        "extraction": {
+          "response.body": {
+            "jmespath": ["price", "symbol"]
+          }
+        }
+      }'
+    ```
+  </Tab>
 
-<Callout type="info">
-The included credentials are for limited public use. For production use, please contact our team.
-</Callout>
+  <Tab value="javascript">
+    ```javascript
+    const response = await fetch('https://zk-prover.vlayer.xyz/api/v2.0/evm/compress-web-proof', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Client-Id': '<your-client-id>',
+        'Authorization': 'Bearer <your-api-key>'
+      },
+      body: JSON.stringify({
+        presentation: {
+          data: "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
+          version: "0.1.0-alpha.12",
+          meta: {
+            notaryUrl: "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+          }
+        },
+        extraction: {
+          "response.body": {
+            jmespath: ["price", "symbol"]
+          }
+        }
+      })
+    });
+
+    const result = await response.json();
+    console.log(result);
+    ```
+  </Tab>
+</Tabs>
 
 Response:
 
 ```json
 {
+  "apiVersion": "v2.0",
   "success": true,
   "data": {
     "zkProof": "0xffffffffa1b2c3d4e5f6...",
@@ -129,7 +189,7 @@ Response:
 
 The `journalDataAbi` contains the ABI-encoded tuple with all public outputs.
 
-To obtain decoding helpers (types, values, and ready-to-use Solidity snippet), call [`POST /debug/journal-decode-helper`](/blockchain/rest-api/journal-decode-helper) with the same request body.
+To obtain decoding helpers (types, values, and ready-to-use Solidity snippet), call [`POST /debug/evm/journal-decode-helper`](/blockchain/rest-api/journal-decode-helper) with the same request body.
 
 When decoded in Solidity using the provided snippet, the `journalDataAbi` will provide:
 - `notaryKeyFingerprint`: Fingerprint of the notary's public key
@@ -141,6 +201,25 @@ When decoded in Solidity using the provided snippet, the `journalDataAbi` will p
 - `extractedValue1`: Symbol value (`"ETHUSDC"`)
 
 `extractedValue0` and `extractedValue1` are dynamic fields - they appear when using the `extraction` field in the request, and are automatically named with consecutive numbers starting from `0`.
+
+### Fake Mode (Development)
+
+For development and testing, use the fake-mode endpoint at `/api/v2.0/fake/evm/compress-web-proof`. It returns mock proofs instantly and is **free** -- requests are not metered and do not count against your usage quota.
+
+```bash
+curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/fake/evm/compress-web-proof \
+  -H "Content-Type: application/json" \
+  -H "X-Client-Id: <your-client-id>" \
+  -H "Authorization: Bearer <your-api-key>" \
+  -d '{
+    "presentation": { ... },
+    "extraction": { ... }
+  }'
+```
+
+<Callout type="warn">
+Fake-mode proofs are not cryptographically valid and cannot be verified on-chain with a production verifier. Use `RiscZeroMockVerifier` for testing with fake proofs.
+</Callout>
 
 ### Future: Multiple Sources and Formats
 

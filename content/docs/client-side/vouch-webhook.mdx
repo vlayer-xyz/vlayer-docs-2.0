@@ -11,7 +11,7 @@ import { Tabs, Tab } from "fumadocs-ui/components/tabs";
 </Callout>
 
 When using the [vouch platform](https://docs.getvouch.io/introduction) to generate web proofs, you’ll receive webhook responses that include both the proof and the associated data.
-This guide shows you how to extract and verify these proofs using the [`POST /api/v1/verify`](/server-side/rest-api/verify-web-proof) endpoint.
+This guide shows you how to extract and verify these proofs using the [`POST /api/v2.0/verify`](/server-side/rest-api/verify) endpoint.
 
 ## Webhook Response Structure
 
@@ -100,7 +100,7 @@ Send the extracted presentation to the verification endpoint:
 <Tabs items={['javascript', 'bash']}>
   <Tab value="javascript">
     ```javascript
-    const verifyResponse = await fetch('https://web-prover.vlayer.xyz/api/v1/verify', {
+    const verifyResponse = await fetch('https://web-prover.vlayer.xyz/api/v2.0/verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ Send the extracted presentation to the verification endpoint:
 
   <Tab value="bash">
     ```bash
-    curl -s -X POST https://web-prover.vlayer.xyz/api/v1/verify \
+    curl -s -X POST https://web-prover.vlayer.xyz/api/v2.0/verify \
       -H "Content-Type: application/json" \
       -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
       -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \

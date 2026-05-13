@@ -1,0 +1,91 @@
+---
+title: Changelog
+description: Differences between v1 and v2 REST API
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# v1 vs v2 API Differences
+
+This page summarises the breaking changes and improvements introduced in v2 compared to v1.
+
+## Base URL
+
+| Version | Base path |
+|---|---|
+| v1 | `/api/v1/` |
+| v2 | `/api/v2.0/` |
+
+## Authentication
+
+v2 no longer accepts the public client ID or anonymous (lack of auth headers) access. Private credentials (client ID + API key) are required for all requests.
+
+## Response envelope
+
+All v2 responses are wrapped in a consistent envelope regardless of success or failure.
+
+**v1** responses are flat:
+
+```json
+{
+  "success": true,
+  "serverDomain": "...",
+  "notaryKeyFingerprint": "..."
+}
+```
+
+**v2** responses wrap the payload under `data`:
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": true,
+  "data": {
+    "serverDomain": "...",
+    "notaryKeyFingerprint": "..."
+  }
+}
+```
+
+## Structured errors
+
+v2 errors include a machine-readable `code` field alongside the human-readable message:
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": false,
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Invalid request: missing field `data`"
+  }
+}
+```
+
+Error codes returned by `/verify`: `INVALID_REQUEST`, `INVALID_PRESENTATION`, `INTERNAL_SERVER_ERROR`
+
+Error codes returned by `/prove`: `INVALID_REQUEST`, `INTERNAL_SERVER_ERROR`
+
+## Strict request validation
+
+v2 rejects requests that contain unknown fields or use snake_case field names, returning a `400 INVALID_REQUEST`. All request body fields must be camelCase.
+
+## /verify: TLS timestamp
+
+The v2 `/verify` response includes a new `tlsTimestamp` field — a Unix epoch timestamp (seconds) of when the TLS handshake occurred, as recorded by the notary. This can be used to establish when the proven data was retrieved.
+
+## /verify: Headers format
+
+The `headers` arrays in the `request` and `response` objects changed format for consistency with `/prove`.
+
+| Version | Format | Example |
+|---|---|---|
+| v1 | Array of `[name, value]` tuples | `[["content-type", "application/json"]]` |
+| v2 | Array of `"name: value"` strings | `["content-type: application/json"]` |
+
+## /prove: Default notary URL
+
+| Version | Default `notaryUrl` |
+|---|---|
+| v1 | `https://test-notary.vlayer.xyz/v0.1.0-alpha.12` |
+| v2 | `https://notary.vlayer.xyz/v0.1.0-alpha.12` |

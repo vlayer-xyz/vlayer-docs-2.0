@@ -1,0 +1,79 @@
+---
+title: Changelog
+description: Differences between v0 and v2 ZK Prover REST API
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# v0 vs v2 API Differences
+
+This page summarises the breaking changes and improvements introduced in v2 compared to v0.
+
+## Base Path
+
+| Version | Base path |
+|---|---|
+| v0 | `/api/v0/` |
+| v2 | `/api/v2.0/evm/` |
+
+## Authentication
+
+v2 requires private credentials for all requests. Anonymous access and the public client ID are rejected.
+
+Requests require both headers:
+
+* `X-Client-Id`: Your client ID
+* `Authorization: Bearer <api-key>`: Your API key
+
+## Response Envelope
+
+All v2 responses include an `apiVersion` field in the JSON body.
+
+**v0** responses:
+
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+**v2** responses:
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": true,
+  "data": { ... }
+}
+```
+
+## Structured Errors
+
+v2 errors include a machine-readable `code` field alongside the human-readable message:
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": false,
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Invalid input"
+  }
+}
+```
+
+## Fake Mode
+
+v2 offers dedicated fake-mode endpoints for development and testing at `/api/v2.0/fake/evm/...`. These use a `FakeProver` that returns mock proofs instantly without real ZK proof generation.
+
+| Endpoint | Real | Fake |
+|---|---|---|
+| Compress | `/api/v2.0/evm/compress-web-proof` | `/api/v2.0/fake/evm/compress-web-proof` |
+| Verify | `/api/v2.0/evm/verify-zk-proof` | `/api/v2.0/fake/evm/verify-zk-proof` |
+
+Fake-mode endpoints are **free** -- they do not count against your usage quota and are not metered. Real compress endpoints consume quota and are billed per request.
+
+<Callout type="warn">
+Fake-mode proofs are not cryptographically valid and cannot be verified on-chain with a production verifier. Use them only for development and integration testing.
+</Callout>

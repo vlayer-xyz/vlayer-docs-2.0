@@ -1,0 +1,177 @@
+---
+title: POST /verify
+description: Verify Web Proof (v2)
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# POST /api/v2.0/verify
+
+Verify a previously generated Web Proof. The verification process:
+
+* **Verifies the HTTPS transcript** - Confirms the integrity of the recorded HTTP request/response data
+* **Verifies the Notary's signature** - Validates the cryptographic signature from the trusted notary service
+* **Confirms data origin** - Ensures the data comes from the expected domain specified in the original request
+* **SSL certificate validation** - Verifies the server's SSL certificate and its complete chain of authority
+* **Extracts plain text transcript** - Retrieves the verified HTTP request/response data for further processing
+  * **Automatic decoding** - Handles chunked transfer encoding and gzip compression automatically
+  * **Raw transcript access** - Provides hex-encoded raw transcript bytes for verification
+
+A complete verification requires checking both the cryptographic proof and the `notaryKeyFingerprint` — the proof confirms the TLS session's integrity, while the fingerprint identifies which notary signed it. Proofs notarized through vlayer's notary service carry a known, trusted fingerprint and require no additional notary validation; if you use a third-party notary, you must independently confirm that the returned `notaryKeyFingerprint` matches your notary's expected public key before trusting the proof.
+
+## Authentication
+
+Requests require both headers:
+
+* `x-client-id`: Your client ID
+* `Authorization: Bearer <api-key>`: Your API key
+
+## Request Body
+
+Send the `data` object from the `/api/v2.0/prove` response directly as the request body.
+
+* `data`: Hex-encoded proof data
+* `version`: TLSN protocol version. Must be `"0.1.0-alpha.12"`
+* `meta`: Metadata object
+  * `notaryUrl`: URL of the notary server used during proving
+
+## Response Body
+
+### Success
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": true,
+  "data": {
+    "serverDomain": "data-api.binance.vision",
+    "notaryKeyFingerprint": "a7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af",
+    "tlsTimestamp": 1758284634,
+    "request": { ... },
+    "response": { ... }
+  }
+}
+```
+
+* **`apiVersion`**: API version string
+* **`success`**: `true`
+* **`data.serverDomain`**: Domain name of the server that was contacted
+* **`data.notaryKeyFingerprint`**: SHA-256 fingerprint of the notary's public key
+* **`data.tlsTimestamp`**: Unix epoch timestamp (seconds) of when the TLS handshake occurred, as recorded by the notary. This can be used to establish when the proven data was retrieved
+* **`data.request`**: Parsed HTTP request
+  * **`method`**: HTTP method (e.g. `"GET"`)
+  * **`url`**: Request path and query string
+  * **`version`**: HTTP version (e.g. `"HTTP/1.1"`)
+  * **`headers`**: Array of `"name: value"` strings
+  * **`body`**: Decoded UTF-8 body string, or `null`
+  * **`raw`**: Hex-encoded raw transcript bytes
+* **`data.response`**: Parsed HTTP response
+  * **`status`**: HTTP status code (e.g. `200`)
+  * **`version`**: HTTP version (e.g. `"HTTP/1.1"`)
+  * **`headers`**: Array of `"name: value"` strings
+  * **`body`**: Decoded UTF-8 body string (automatically decoded from chunked/gzip encoding), or `null`
+  * **`raw`**: Hex-encoded raw transcript bytes
+
+### Error
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": false,
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Invalid request: ..."
+  }
+}
+```
+
+* **`error.code`**: Machine-readable error code. Possible values:
+  * `INVALID_REQUEST` — malformed request body (400)
+  * `INVALID_PRESENTATION` — the `data` field could not be decoded as a valid presentation (400)
+  * `INTERNAL_SERVER_ERROR` — verification or transcript parsing failed (500)
+* **`error.message`**: Human-readable description. The values returned here may change over time, use `error.code` for stable error indication
+
+## Example
+
+<Tabs items={['bash', 'javascript']}>
+  <Tab value="bash">
+    ```bash
+    curl -X POST https://web-prover.vlayer.xyz/api/v2.0/verify \
+      -H "Content-Type: application/json" \
+      -H "x-client-id: <your-client-id>" \
+      -H "Authorization: Bearer <your-api-key>" \
+      -d '{
+        "data": "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
+        "version": "0.1.0-alpha.12",
+        "meta": {
+          "notaryUrl": "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+        }
+      }'
+    ```
+  </Tab>
+
+  <Tab value="javascript">
+    ```javascript
+    // presentation object from /api/v2.0/prove response
+    const presentation = {
+      data: "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
+      version: "0.1.0-alpha.12",
+      meta: {
+        notaryUrl: "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+      }
+    };
+
+    const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-client-id': '<your-client-id>',
+        'Authorization': 'Bearer <your-api-key>'
+      },
+      body: JSON.stringify(presentation)
+    });
+
+    const result = await response.json();
+    console.log(JSON.stringify(result, null, 2));
+    ```
+  </Tab>
+</Tabs>
+
+Response:
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": true,
+  "data": {
+    "serverDomain": "data-api.binance.vision",
+    "notaryKeyFingerprint": "a7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af",
+    "tlsTimestamp": 1758284634,
+    "request": {
+      "method": "GET",
+      "url": "/api/v3/exchangeInfo?symbol=ETHUSDC",
+      "version": "HTTP/1.1",
+      "headers": [
+        "connection: close",
+        "host: data-api.binance.vision"
+      ],
+      "body": null,
+      "raw": "474554202f6170692f76332f65786368616e6765496..."
+    },
+    "response": {
+      "status": 200,
+      "version": "HTTP/1.1",
+      "headers": [
+        "date: Thu, 02 Oct 2025 04:27:38 GMT",
+        "content-type: application/json;charset=UTF-8",
+        "content-length: 5471",
+        "connection: close",
+        "server: nginx"
+      ],
+      "body": "{\"timezone\":\"UTC\",\"serverTime\":1759379258989,...}",
+      "raw": "485454502f312e3120323030204f4b0d0a446174653..."
+    }
+  }
+}
+```

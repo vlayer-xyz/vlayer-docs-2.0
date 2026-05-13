@@ -1,57 +1,51 @@
 ---
 title: POST /verify-zk-proof
-
+description: Verify a ZK proof (v2)
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-<Callout type="warn">
-**Under Development**: This API is currently in development. Documentation and endpoints may change. For production use, please contact our team.
-</Callout>
+# POST /api/v2.0/evm/verify-zk-proof
 
-# POST /api/v0/verify-zk-proof
+<Callout type="warn">
+**Not Yet Implemented**: This endpoint currently returns `501 Not Implemented`. ZK proof verification is planned for a future release. For on-chain verification, use the [RISC Zero Verifier Router](/blockchain/examples/verifier-contract) directly in your smart contract.
+</Callout>
 
 Verify a previously generated ZK proof.
 
-## Request Body
+## Authentication
 
-* `zkProof`: Serialized ZK proof data to verify
-* `publicOutputs`: Expected public outputs from the ZK proof
-  * `notaryKeyFingerprint`: Expected notary key fingerprint
-  * `url`: Expected URL from the original Web Proof
-  * `queriesHash`: Expected hash of extraction queries (see [how is queries hash calculated](/blockchain/rest-api/compress-web-proof#queries-hash-calculation))
-  * `values`: Expected extracted values array
-* `imageId`: Identifier for the ZK proof verification image/circuit
+Requests require both headers:
 
-{/* Where is imageId published? What's the lifecycle of imageId? Multiple imageIds support? */}
+* `X-Client-Id`: Your client ID
+* `Authorization: Bearer <api-key>`: Your API key
 
-## Response Body
+## Current Response
 
-* **`success`**: Boolean indicating whether the ZK proof verification was successful
-
-## Example
-
-Verify a previously generated ZK proof:
-
-```bash
-curl -X POST https://zk-prover.vlayer.xyz/api/v0/verify-zk-proof \
-  -H "Content-Type: application/json" \
-  -d '{
-    "zkProof": "0x1234567890abcdef...",
-    "publicOutputs": {
-      "notaryKeyFingerprint": "b593a6f7ea2ec684e47589b1a4dfe3490a0000000000000000000000010000000000000027",
-      "url": "https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC",
-      "queriesHash": "0xabc123def456789012345678901234567890123456789012345678901234abcd",
-      "values": ["3500.50", "ETHUSDC"]
-    },
-    "imageId": "web-proof-verifier-v1"
-  }'
-```
-
-Response:
+All requests return `501 Not Implemented`:
 
 ```json
 {
-  "success": true
+  "apiVersion": "v2.0",
+  "success": false,
+  "error": {
+    "code": "NOT_IMPLEMENTED",
+    "message": "ZK proof verification is not yet implemented"
+  }
 }
 ```
+
+## Fake Mode
+
+A fake-mode variant is available at `/api/v2.0/fake/evm/verify-zk-proof`. It also returns `501 Not Implemented`.
+
+## Alternative: On-Chain Verification
+
+Until this endpoint is implemented, verify ZK proofs directly on-chain using the [RISC Zero Verifier Router](https://dev.risczero.com/api/blockchain-integration/contracts/verifier):
+
+```solidity
+IRiscZeroVerifier verifier = IRiscZeroVerifier(verifierAddress);
+verifier.verify(seal, IMAGE_ID, sha256(journalData));
+```
+
+See the [verifier contract tutorial](/blockchain/examples/verifier-contract) for deployment instructions, or the [Binance on Ethereum example](/blockchain/examples/binance-ethereum) for a complete end-to-end flow.
