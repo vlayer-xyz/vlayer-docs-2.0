@@ -25,7 +25,7 @@ function getConnectionString(): string {
 function createClient() {
   const connectionString = getConnectionString();
   const pool = new Pool({ connectionString });
-  const adapter = new PrismaPg(pool);
+  const adapter = new PrismaPg(pool as never);
 
   return new PrismaClient({
     adapter,
