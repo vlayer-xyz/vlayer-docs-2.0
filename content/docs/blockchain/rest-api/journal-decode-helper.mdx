@@ -1,10 +1,12 @@
 ---
 title: POST /debug/journal-decode-helper
+description: Journal decode helper for Solidity integration (v2)
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
-# POST /api/v0/debug/journal-decode-helper
+# POST /api/v2.0/debug/evm/journal-decode-helper
 
 <Callout type="warn" title="Development Tool Only">
   This endpoint is for **debugging and development purposes only**. It provides
@@ -14,7 +16,14 @@ import { Callout } from "fumadocs-ui/components/callout";
   on-chain verifiable ZK proofs for production.
 </Callout>
 
-Returns helper data to decode `journalDataAbi` from the ZK Prover's `/compress-web-proof` response.
+Returns helper data to decode `journalDataAbi` from the ZK Prover's [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) response.
+
+## Authentication
+
+Requests require both headers:
+
+* `X-Client-Id`: Your client ID
+* `Authorization: Bearer <api-key>`: Your API key
 
 ## Request Body
 
@@ -24,45 +33,104 @@ Same as [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) — pas
 
 ### Success
 
-- `success`: true
-- `data`:
-  - `journalTypes`: Array of Solidity type names (e.g., `["bytes32","string","uint256"]`)
-  - `journalValues`: Array of formatted values for display/debugging
-  - `solidityCodeSnippet`: Ready-to-use Solidity `abi.decode` snippet
-  - `journalDataAbi`: Hex-encoded ABI data (same format as returned by `/compress-web-proof`)
+```json
+{
+  "apiVersion": "v2.0",
+  "success": true,
+  "data": {
+    "journalTypes": ["bytes32", "string", "string", "uint256", "bytes32", "string", "string"],
+    "journalValues": ["0xa7e6...", "\"GET\"", "\"https://...\"", "1234567890", "0xe27c...", "\"3500.50\"", "\"ETHUSDC\""],
+    "solidityCodeSnippet": "(bytes32 notaryKeyFingerprint, ...) = abi.decode(journalData, (bytes32, ...))",
+    "journalDataAbi": "0xa7e62d7f..."
+  }
+}
+```
+
+* **`apiVersion`**: API version string
+* **`success`**: `true`
+* **`data.journalTypes`**: Array of Solidity type names
+* **`data.journalValues`**: Array of formatted values for display/debugging
+* **`data.solidityCodeSnippet`**: Ready-to-use Solidity `abi.decode` snippet
+* **`data.journalDataAbi`**: Hex-encoded ABI data (same format as returned by `/compress-web-proof`)
 
 ### Error
 
-- `success`: false
-- `error`:
-  - `code`: Error code
-  - `message`: Human-readable error
+```json
+{
+  "apiVersion": "v2.0",
+  "success": false,
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "..."
+  }
+}
+```
+
+* **`error.code`**: Machine-readable error code
+* **`error.message`**: Human-readable description
 
 ## Example
 
-```bash
-curl -X POST https://zk-prover.vlayer.xyz/api/v0/debug/journal-decode-helper \
-  -H "Content-Type: application/json" \
-  -d '{
-    "presentation": {
-      "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
-      "version": "0.1.0-alpha.12",
-      "meta": {
-        "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
-      }
-    },
-    "extraction": {
-      "response.body": {
-        "jmespath": ["price", "symbol"]
-      }
-    }
-  }'
-```
+<Tabs items={['bash', 'javascript']}>
+  <Tab value="bash">
+    ```bash
+    curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/debug/evm/journal-decode-helper \
+      -H "Content-Type: application/json" \
+      -H "X-Client-Id: <your-client-id>" \
+      -H "Authorization: Bearer <your-api-key>" \
+      -d '{
+        "presentation": {
+          "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
+          "version": "0.1.0-alpha.12",
+          "meta": {
+            "notaryUrl": "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+          }
+        },
+        "extraction": {
+          "response.body": {
+            "jmespath": ["price", "symbol"]
+          }
+        }
+      }'
+    ```
+  </Tab>
+
+  <Tab value="javascript">
+    ```javascript
+    const response = await fetch('https://zk-prover.vlayer.xyz/api/v2.0/debug/evm/journal-decode-helper', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Client-Id': '<your-client-id>',
+        'Authorization': 'Bearer <your-api-key>'
+      },
+      body: JSON.stringify({
+        presentation: {
+          data: "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
+          version: "0.1.0-alpha.12",
+          meta: {
+            notaryUrl: "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+          }
+        },
+        extraction: {
+          "response.body": {
+            jmespath: ["price", "symbol"]
+          }
+        }
+      })
+    });
+
+    const result = await response.json();
+    console.log(result.data.solidityCodeSnippet);
+    ```
+  </Tab>
+</Tabs>
 
 Response:
 
 ```json
 {
+  "apiVersion": "v2.0",
   "success": true,
   "data": {
     "journalTypes": [
