@@ -20,9 +20,8 @@ Returns helper data to decode `journalDataAbi` from the ZK Prover's [`/compress-
 
 ## Authentication
 
-Requests require both headers:
+Requests require header:
 
-* `X-Client-Id`: Your client ID
 * `Authorization: Bearer <api-key>`: Your API key
 
 ## Request Body
@@ -76,7 +75,6 @@ Same as [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) — pas
     ```bash
     curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/debug/evm/journal-decode-helper \
       -H "Content-Type: application/json" \
-      -H "X-Client-Id: <your-client-id>" \
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
         "presentation": {
@@ -101,7 +99,6 @@ Same as [`/compress-web-proof`](/blockchain/rest-api/compress-web-proof) — pas
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Client-Id': '<your-client-id>',
         'Authorization': 'Bearer <your-api-key>'
       },
       body: JSON.stringify({

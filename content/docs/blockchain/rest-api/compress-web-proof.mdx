@@ -23,9 +23,8 @@ Generate a ZK proof from a Web Proof. The process:
 
 ## Authentication
 
-Requests require both headers:
+Requests require header:
 
-* `X-Client-Id`: Your client ID
 * `Authorization: Bearer <api-key>`: Your API key
 
 ## Request Body
@@ -124,7 +123,6 @@ The `journalDataAbi` is encoded as tuple parameters in the following order:
     ```bash
     curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/evm/compress-web-proof \
       -H "Content-Type: application/json" \
-      -H "X-Client-Id: <your-client-id>" \
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
         "presentation": {
@@ -149,7 +147,6 @@ The `journalDataAbi` is encoded as tuple parameters in the following order:
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Client-Id': '<your-client-id>',
         'Authorization': 'Bearer <your-api-key>'
       },
       body: JSON.stringify({
@@ -209,7 +206,6 @@ For development and testing, use the fake-mode endpoint at `/api/v2.0/fake/evm/c
 ```bash
 curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/fake/evm/compress-web-proof \
   -H "Content-Type: application/json" \
-  -H "X-Client-Id: <your-client-id>" \
   -H "Authorization: Bearer <your-api-key>" \
   -d '{
     "presentation": { ... },

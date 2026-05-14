@@ -82,7 +82,6 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
     ```bash
     curl -X POST https://web-prover.vlayer.xyz/api/v2.0/prove \
       -H "Content-Type: application/json" \
-      -H "x-client-id: <your-client-id>" \
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
         "url": "https://data-api.binance.vision/api/v3/exchangeInfo?symbol=ETHUSDC",
@@ -97,7 +96,6 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-client-id': '<your-client-id>',
         'Authorization': 'Bearer <your-api-key>'
       },
       body: JSON.stringify({

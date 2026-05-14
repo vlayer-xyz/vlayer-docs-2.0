@@ -26,8 +26,7 @@ First, we need a Web Proof of Binance API data. This step is detailed in our [Bi
 ```bash
 curl -X POST https://web-prover.vlayer.xyz/api/v2.0/prove \
   -H "Content-Type: application/json" \
-  -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
-  -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
+  -H "Authorization: Bearer ak_ESW9RZSNVBEQ728R8PJBPR80E6EFA9QX" \
   -d '{
     "url": "https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDC",
     "headers": []
@@ -41,7 +40,7 @@ Response:
   "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
   "version": "0.1.0-alpha.12",
   "meta": {
-    "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+    "notaryUrl": "https://notary.vlayer.xyz/v0.1.0-alpha.12"
   }
 }
 ```
@@ -55,14 +54,13 @@ Next, we use the ZK Prover Server to convert the Web Proof into a ZK proof, extr
 ```bash
 curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/evm/compress-web-proof \
   -H "Content-Type: application/json" \
-  -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
-  -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
+  -H "Authorization: Bearer ak_ESW9RZSNVBEQ728R8PJBPR80E6EFA9QX" \
   -d '{
     "presentation": {
       "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
       "version": "0.1.0-alpha.12",
       "meta": {
-        "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+        "notaryUrl": "https://notary.vlayer.xyz/v0.1.0-alpha.12"
       }
     },
     "extraction": {
@@ -92,14 +90,13 @@ Fetch decode helpers via a separate call:
 ```bash
 curl -X POST https://zk-prover.vlayer.xyz/api/v2.0/debug/evm/journal-decode-helper \
   -H "Content-Type: application/json" \
-  -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
-  -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
+  -H "Authorization: Bearer ak_ESW9RZSNVBEQ728R8PJBPR80E6EFA9QX" \
   -d '{
     "presentation": {
       "data": "014000000000000000ee32d73a6a70e406a31ffa683416b7376...",
       "version": "0.1.0-alpha.12",
       "meta": {
-        "notaryUrl": "https://test-notary.vlayer.xyz/v0.1.0-alpha.12"
+        "notaryUrl": "https://notary.vlayer.xyz/v0.1.0-alpha.12"
       }
     },
     "extraction": {
