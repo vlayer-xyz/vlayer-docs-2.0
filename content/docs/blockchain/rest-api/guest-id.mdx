@@ -14,7 +14,7 @@ Retrieve the ID of RISC Zero guest program used by the ZK Prover Server to gener
 
 Requests require header:
 
-* `X-Client-Id`: Your client ID
+* `Authorization`: `Bearer <token>` — your API secret
 
 ## Request
 
@@ -46,7 +46,7 @@ No request body or query parameters required.
   "success": false,
   "error": {
     "code": "UNAUTHORIZED",
-    "message": "Missing Authorization header or X-Client-Id"
+    "message": "Missing or invalid Authorization header"
   }
 }
 ```

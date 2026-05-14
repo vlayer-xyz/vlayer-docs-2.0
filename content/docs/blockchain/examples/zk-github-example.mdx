@@ -88,7 +88,6 @@ Proxies GitHub GraphQL queries through vlayer's Web Prover API to generate tampe
 const response = await fetch(`${baseUrl}/prove`, {
   method: 'POST',
   headers: {
-    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID,
     'Authorization': `Bearer ${process.env.WEB_PROVER_API_SECRET}`
   },
   body: JSON.stringify({
@@ -108,7 +107,6 @@ Converts web proofs into ZK proofs suitable for on-chain verification:
 const response = await fetch(`${zkProverUrl}/compress-web-proof`, {
   method: 'POST',
   headers: {
-    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID,
     'Authorization': `Bearer ${process.env.WEB_PROVER_API_SECRET}`
   },
   body: JSON.stringify({
