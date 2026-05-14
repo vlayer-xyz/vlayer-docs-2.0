@@ -23,7 +23,6 @@ git clone https://github.com/vlayer-xyz/github-contribution-verifier.git && npm 
 Create a `.env.local` file with your vlayer API credentials:
 
 ```
-WEB_PROVER_API_CLIENT_ID=your_client_id
 WEB_PROVER_API_SECRET=your_api_secret
 ```
 
@@ -118,15 +117,13 @@ const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/prove', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID || '',
     'Authorization': 'Bearer ' + process.env.WEB_PROVER_API_SECRET,
   },
   body: JSON.stringify(requestBody),
 });
 ```
 
-**Authentication:** The vlayer API requires two credentials:
-- `x-client-id` - Your client identifier
+**Authentication:** The vlayer API requires:
 - `Authorization` - Bearer token with your API secret
 
 **4. Response Format**
@@ -151,7 +148,6 @@ The endpoint accepts the entire presentation object from the prove step as the r
 const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/verify', {
   method: 'POST',
   headers: {
-    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID || '',
     'Authorization': 'Bearer ' + process.env.WEB_PROVER_API_SECRET,
     'Content-Type': 'application/json',
   },
@@ -160,8 +156,7 @@ const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/verify', {
 });
 ```
 
-**Authentication:** Uses the same vlayer API credentials as the prove endpoint:
-- `x-client-id` - Your client identifier
+**Authentication:** Uses the same vlayer API credential as the prove endpoint:
 - `Authorization` - Bearer token with your API secret
 
 **3. Response Format**

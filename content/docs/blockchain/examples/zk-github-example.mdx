@@ -37,7 +37,6 @@ forge soldeer install
 Create a `.env.local` file in the root directory:
 
 ```bash
-WEB_PROVER_API_CLIENT_ID=""
 WEB_PROVER_API_SECRET=""
 GITHUB_TOKEN=""
 ```
@@ -89,7 +88,6 @@ Proxies GitHub GraphQL queries through vlayer's Web Prover API to generate tampe
 const response = await fetch(`${baseUrl}/prove`, {
   method: 'POST',
   headers: {
-    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID,
     'Authorization': `Bearer ${process.env.WEB_PROVER_API_SECRET}`
   },
   body: JSON.stringify({
@@ -109,7 +107,6 @@ Converts web proofs into ZK proofs suitable for on-chain verification:
 const response = await fetch(`${zkProverUrl}/compress-web-proof`, {
   method: 'POST',
   headers: {
-    'x-client-id': process.env.WEB_PROVER_API_CLIENT_ID,
     'Authorization': `Bearer ${process.env.WEB_PROVER_API_SECRET}`
   },
   body: JSON.stringify({
@@ -258,7 +255,7 @@ npm run test:e2e
 - `contracts` dependencies installed (`npm install` inside `contracts/`)
 - No other services bound to the random ports the test selects
 - Real network access plus the following environment variables (the test fails fast if any are missing):
-  - `WEB_PROVER_API_CLIENT_ID` and `WEB_PROVER_API_SECRET` (vlayer credentials)
+  - `WEB_PROVER_API_SECRET` (vlayer credential)
   - `GITHUB_TOKEN` (or `GITHUB_GRAPHQL_TOKEN`) with GitHub GraphQL access
   - Optional overrides: `WEB_PROVER_API_URL`, `ZK_PROVER_API_URL`, `GITHUB_LOGIN`, `GITHUB_REPO_OWNER`, `GITHUB_REPO_NAME` for the query target
 - The test calls `/api/prove`, `/api/compress`, and finally submits the compressed proof to the locally deployed contract via viem/wagmi-compatible logic.
@@ -271,7 +268,6 @@ GITHUB_TOKEN=ghp_xxx
 GITHUB_LOGIN=your-handle
 GITHUB_REPO_OWNER=vlayer-xyz
 GITHUB_REPO_NAME=vlayer
-WEB_PROVER_API_CLIENT_ID=client-id
 WEB_PROVER_API_SECRET=client-secret
 ```
 

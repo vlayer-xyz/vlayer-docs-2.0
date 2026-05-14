@@ -34,11 +34,21 @@ To preserve privacy and authenticate data origin, TLS connections use symmetric 
 
 The Notary is a third-party server that joins a two-sided TLS connection by maintaining a link with the client while the client connects to the server. From the server's perspective, nothing changes—it still sees the client as a single entity. However, on the client side, the setup is different: the client holds one half of the encryption key, while the Notary holds the other. They collaborate using a **Multi-Party Computation (MPC)** algorithm to manage the connection, encrypting messages and decrypting server responses.
 
-## Privacy preservation
+## MPC vs Proxy Mode
 
-The Notary performs only half of the encryption and decryption, ensuring it never sees the actual content of the transcript. This structure makes the notarization process privacy-preserving.
+TLSNotary supports two notarization modes: **MPC** and **Proxy**. MPC mode offers the strongest security guarantees by ensuring no single party ever holds the full session keys. Proxy mode trades some of those guarantees for dramatically faster verification.
 
-## Notarisation
+**MPC mode** works by splitting the TLS session keys between the prover and the Notary. Each party holds a share; neither can reconstruct the full key alone. Because the Notary participates in the handshake directly, it can verify the transcript without ever reading its contents, and the prover has no ability to tamper with or fabricate the session. The tradeoff is speed: coordinating key shares across two parties during an active TLS connection requires multiple cryptographic round trips, which adds significant latency and bandwidth consumption.
+
+**Proxy mode** keeps the TLS session intact between the prover and the target server, but routes it through the Notary's infrastructure. The Notary observes the encrypted traffic as it passes through. Once the session ends, a zero-knowledge proof ties that traffic to the completed TLS session, giving the Notary grounds to sign the attestation without having decrypted anything. Because there is no live cryptographic coordination during the handshake, this is substantially faster. The narrower security assumption is that an attacker cannot control both the prover and the network path through the Notary at the same time.
+
+MPC is the most secure protocol. It remains secure even if the prover is fully malicious. However, it is sensitive to network latency and bandwidth. Proxy mode is much faster, but it is only secure if an adversary cannot both compromise the prover and intercept the verifier's network traffic at the same time. If that assumption matches your deployment, try the difference on your own connection. The rest of this page describes how MPC mode works in detail.
+
+<Callout type="info">
+  For client-side web proofs, MPC and proxy mode can be configured in [Vouch](/client-side/introduction). For a deeper technical comparison of the two modes, see the [TLSNotary proxy mode announcement](https://tlsnotary.org/blog/2026/04/22/proxy-mode/).
+</Callout>
+
+## Notarization
 
 The Notary can sign off on the content of the transcript. But how can it verify and sign something it never sees? This is where MPC comes into play. What really happens, is that the client creates a cryptographic commitment of the decrypted transcript, a Merkle Tree root of the transcript. Through MPC, the client proves to the Notary that this commitment matches the encrypted transcript the Notary witnessed. Upon successful notarization, the Notary signs the client's commitment.
 

@@ -13,6 +13,7 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://docs.vlayer.xyz'),
   icons: {
     icon: '/favicon.svg',
   },

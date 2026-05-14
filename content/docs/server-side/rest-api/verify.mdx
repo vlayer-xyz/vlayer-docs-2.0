@@ -22,9 +22,8 @@ A complete verification requires checking both the cryptographic proof and the `
 
 ## Authentication
 
-Requests require both headers:
+Requests require header:
 
-* `x-client-id`: Your client ID
 * `Authorization: Bearer <api-key>`: Your API key
 
 ## Request Body
@@ -34,7 +33,7 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
 * `data`: Hex-encoded proof data
 * `version`: TLSN protocol version. Must be `"0.1.0-alpha.12"`
 * `meta`: Metadata object
-  * `notaryUrl`: URL of the notary server used during proving
+* `notaryUrl`: URL of the notary server used during proving
 
 ## Response Body
 
@@ -99,7 +98,6 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
     ```bash
     curl -X POST https://web-prover.vlayer.xyz/api/v2.0/verify \
       -H "Content-Type: application/json" \
-      -H "x-client-id: <your-client-id>" \
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
         "data": "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
