@@ -31,9 +31,13 @@ Requests require header:
 Send the `data` object from the `/api/v2.0/prove` response directly as the request body.
 
 * `data`: Hex-encoded proof data
-* `version`: TLSN protocol version. Must be `"0.1.0-alpha.12"`
+* `version`: TLSN presentation format. Accepted values:
+  * `"0.1.0-alpha.12"` — legacy alpha.12 presentations
+  * `"2.0.0"` — alpha.15 presentations, covering both MPC and proxy proving modes
 * `meta`: Metadata object
-* `notaryUrl`: URL of the notary server used during proving
+* `notaryUrl`: URL of the notary server used during proving. Metadata only — the verifier does not contact the notary. Trust is anchored on the `notaryKeyFingerprint` returned in the response, which is derived from the notary key embedded in the presentation
+
+The endpoint auto-dispatches to the right verifier based on `version`. Alpha.15 MPC and proxy proofs share a single wire format (`"2.0.0"`) and a single verification path — the proving topology is not visible to `/verify`.
 
 ## Response Body
 
