@@ -100,7 +100,7 @@ Send the extracted presentation to the verification endpoint:
 <Tabs items={['javascript', 'bash']}>
   <Tab value="javascript">
     ```javascript
-    const verifyResponse = await fetch('https://web-prover.vlayer.xyz/api/v2.0/verify', {
+    const verifyResponse = await fetch('https://web-prover.production.vlayer.xyz/api/v2.0/verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ Send the extracted presentation to the verification endpoint:
 
   <Tab value="bash">
     ```bash
-    curl -s -X POST https://web-prover.vlayer.xyz/api/v2.0/verify \
+    curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/verify \
       -H "Content-Type: application/json" \
       -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
       -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \

@@ -96,7 +96,7 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
 <Tabs items={['bash', 'javascript']}>
   <Tab value="bash">
     ```bash
-    curl -X POST https://web-prover.vlayer.xyz/api/v2.0/verify \
+    curl -X POST https://web-prover.production.vlayer.xyz/api/v2.0/verify \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
@@ -120,7 +120,7 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
       }
     };
 
-    const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/verify', {
+    const response = await fetch('https://web-prover.production.vlayer.xyz/api/v2.0/verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

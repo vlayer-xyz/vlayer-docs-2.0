@@ -80,7 +80,7 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
 <Tabs items={['bash', 'javascript']}>
   <Tab value="bash">
     ```bash
-    curl -X POST https://web-prover.vlayer.xyz/api/v2.0/prove \
+    curl -X POST https://web-prover.production.vlayer.xyz/api/v2.0 \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
@@ -92,7 +92,7 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
 
   <Tab value="javascript">
     ```javascript
-    const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/prove', {
+    const response = await fetch('https://web-prover.production.vlayer.xyz/api/v2.0', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ This example makes an authenticated Gmail API request while redacting the `Autho
 <Tabs items={['bash', 'javascript']}>
   <Tab value="bash">
     ```bash
-    curl -X POST https://web-prover.vlayer.xyz/api/v2.0/prove \
+    curl -X POST https://web-prover.production.vlayer.xyz/api/v2.0 \
       -H "Content-Type: application/json" \
       -H "x-client-id: <your-client-id>" \
       -H "Authorization: Bearer <your-api-key>" \
@@ -155,7 +155,7 @@ This example makes an authenticated Gmail API request while redacting the `Autho
 
   <Tab value="javascript">
     ```javascript
-    const response = await fetch('https://web-prover.vlayer.xyz/api/v2.0/prove', {
+    const response = await fetch('https://web-prover.production.vlayer.xyz/api/v2.0', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
