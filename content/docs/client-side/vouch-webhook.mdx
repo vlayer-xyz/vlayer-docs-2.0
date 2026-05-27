@@ -48,10 +48,10 @@ The `presentationJson` field contains the cryptographic proof that can be verifi
           presentationJson: {
             data: "014000000000000000db...",
             meta: {
-              notaryUrl: "https://notary.example.com/v0.1.0-alpha.12",
-              websocketProxyUrl: "wss://proxy.example.com"
+              notaryUrl: "https://notary.production.vlayer.xyz/v2.0.0",
+              websocketProxyUrl: "ws://proxy.vlayer.xyz:80"
             },
-            version: "0.1.0-alpha.12"
+            version: "2.0.0"
           }
         }
       ]
@@ -78,10 +78,10 @@ The `presentationJson` field contains the cryptographic proof that can be verifi
           "presentationJson": {
             "data": "014000000000000000db...",
             "meta": {
-              "notaryUrl": "https://notary.example.com/v0.1.0-alpha.12",
-              "websocketProxyUrl": "wss://proxy.example.com"
+              "notaryUrl": "https://notary.production.vlayer.xyz/v2.0.0",
+              "websocketProxyUrl": "ws://proxy.vlayer.xyz:80"
             },
-            "version": "0.1.0-alpha.12"
+            "version": "2.0.0"
           }
         }
       ]
@@ -138,35 +138,38 @@ You should receive a JSON response with `"success": true` and the decoded reques
 
 ```json
 {
+  "apiVersion": "v2.0",
   "success": true,
-  "serverDomain": "example.com",
-  "notaryKeyFingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
-  "request": {
-    "method": "POST",
-    "url": "/api/v2/order/details",
-    "version": "HTTP/1.1",
-    "headers": [
-      ["content-type", "application/json"],
-      ["accept", "*/*"],
-      ["host", "XXXXXXXXXXXXXXX"],
-      ["connection", "XXXXX"]
-    ],
-    "body": "{\"orderNumber\":\"00000000000000000000\",\"createTime\":0}",
-    "raw": "504f5354202f626170692f...",
-    "parsingSuccess": true
-  },
-  "response": {
-    "status": 200,
-    "version": "HTTP/1.1",
-    "headers": [
-      ["content-type", "application/json"],
-      ["content-length", "2543"],
-      ["content-encoding", "gzip"],
-      ["date", "Mon, 01 Jan 2024 00:00:00 GMT"]
-    ],
-    "body": "{\"code\":\"000000\",\"message\":null,\"data\":{\"orderNumber\":\"00000000000000000000\",\"asset\":\"USDT\",\"amount\":\"0.00000000\",...}}",
-    "raw": "485454502f312e3120323030204f4b...",
-    "parsingSuccess": true
+  "traceId": "00000000000000000000000000000000",
+  "data": {
+    "serverDomain": "example.com",
+    "notaryKeyFingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+    "tlsTimestamp": 1748300000,
+    "request": {
+      "method": "GET",
+      "url": "/api/v2/user/profile",
+      "version": "HTTP/1.1",
+      "headers": [
+        "content-type: application/json",
+        "accept: */*",
+        "host: XXXXXXXXXXXXXXX",
+        "connection: XXXXX"
+      ],
+      "body": null,
+      "raw": "474554202f6170692f76322f..."
+    },
+    "response": {
+      "status": 200,
+      "version": "HTTP/1.1",
+      "headers": [
+        "content-type: application/json",
+        "content-length: 2543",
+        "content-encoding: gzip",
+        "date: Mon, 01 Jan 2024 00:00:00 GMT"
+      ],
+      "body": "{\"id\":\"00000000\",\"name\":\"XXXXXXXX\",...}",
+      "raw": "485454502f312e3120323030204f4b..."
+    }
   }
 }
 ```
