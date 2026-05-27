@@ -12,9 +12,8 @@ Generate a cryptographic Web Proof by making a notarized HTTP request to the spe
 
 ## Authentication
 
-Requests require both headers:
+Requests require header:
 
-* `x-client-id`: Your client ID
 * `Authorization: Bearer <api-key>`: Your API key
 
 ## Request Body
@@ -80,7 +79,7 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
 <Tabs items={['bash', 'javascript']}>
   <Tab value="bash">
     ```bash
-    curl -X POST https://web-prover.production.vlayer.xyz/api/v2.0 \
+    curl -X POST https://web-prover.production.vlayer.xyz/api/v2.0/prove \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
@@ -92,7 +91,7 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
 
   <Tab value="javascript">
     ```javascript
-    const response = await fetch('https://web-prover.production.vlayer.xyz/api/v2.0', {
+    const response = await fetch('https://web-prover.production.vlayer.xyz/api/v2.0/prove', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -133,9 +132,8 @@ This example makes an authenticated Gmail API request while redacting the `Autho
 <Tabs items={['bash', 'javascript']}>
   <Tab value="bash">
     ```bash
-    curl -X POST https://web-prover.production.vlayer.xyz/api/v2.0 \
+    curl -X POST https://web-prover.production.vlayer.xyz/api/v2.0/prove \
       -H "Content-Type: application/json" \
-      -H "x-client-id: <your-client-id>" \
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
         "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/<email-id>?format=raw",
@@ -155,11 +153,10 @@ This example makes an authenticated Gmail API request while redacting the `Autho
 
   <Tab value="javascript">
     ```javascript
-    const response = await fetch('https://web-prover.production.vlayer.xyz/api/v2.0', {
+    const response = await fetch('https://web-prover.production.vlayer.xyz/api/v2.0/prove', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-client-id': '<your-client-id>',
         'Authorization': 'Bearer <your-api-key>'
       },
       body: JSON.stringify({

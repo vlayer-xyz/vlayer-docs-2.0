@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api *)",
+      "Bash(curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/prove -H 'Content-Type: application/json' -H 'Authorization: Bearer ak_67KPH6DVBHK0MG7JS9H6H93CWCZ1W38C' -d '{ *)",
+      "Bash(curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/prove -H 'Content-Type: application/json' -H 'Authorization: Bearer ak_67KPH6DVBHK0MG7JS9H6H93CWCZ1W38C' -d '{\"url\": \"https://data-api.binance.vision/api/v3/exchangeInfo?symbol=ETHUSDC\", \"headers\": []}')",
+      "Read(//tmp/**)",
+      "Bash(curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/verify -H 'Content-Type: application/json' -H 'Authorization: Bearer ak_67KPH6DVBHK0MG7JS9H6H93CWCZ1W38C' -d @/tmp/verify_body.json)",
+      "Bash(curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/verify -H 'Content-Type: application/json' -H 'x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c' -H 'Authorization: Bearer ak_67KPH6DVBHK0MG7JS9H6H93CWCZ1W38C' -d @/tmp/vouch_verify_body.json)",
+      "Bash(curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/verify -H 'Content-Type: application/json' -H 'Authorization: Bearer ak_67KPH6DVBHK0MG7JS9H6H93CWCZ1W38C' -d @/tmp/vouch_verify_body.json)",
+      "Bash(curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/verify \\\\ *)"
+    ],
+    "additionalDirectories": [
+      "/Users/seanconrad/Desktop"
+    ]
+  }
+}
