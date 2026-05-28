@@ -7,5 +7,7 @@
       "Read(//tmp/**)"
     ],
     "additionalDirectories": []
+      "WebFetch(domain:docs.getvouch.io)"
+    ]
   }
 }

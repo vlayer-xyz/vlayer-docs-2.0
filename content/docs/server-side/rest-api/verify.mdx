@@ -103,9 +103,9 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
         "data": "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
-        "version": "0.1.0-alpha.12",
+        "version": "2.0.0",
         "meta": {
-          "notaryUrl": "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+          "notaryUrl": "https://notary.production.vlayer.xyz/v2.0.0"
         }
       }'
     ```
@@ -113,12 +113,12 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
 
   <Tab value="javascript">
     ```javascript
-    // presentation object from /api/v2.0/prove response
+    // presentation object — the presentationJson field from a vouch webhook payload
     const presentation = {
       data: "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
-      version: "0.1.0-alpha.12",
+      version: "2.0.0",
       meta: {
-        notaryUrl: "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+        notaryUrl: "https://notary.production.vlayer.xyz/v2.0.0"
       }
     };
 
