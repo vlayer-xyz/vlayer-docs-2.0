@@ -24,7 +24,7 @@ The workflow consists of three main steps:
 First, we need a Web Proof of Binance API data. This step is detailed in our [Binance Web Proof example](/server-side/examples/binance). The Web Proof contains the complete HTTP request/response data from the Binance API.
 
 ```bash
-curl -X POST https://web-prover.vlayer.xyz/api/v2.0/prove \
+curl -X POST https://web-prover.production.vlayer.xyz/api/v2.0 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ak_ESW9RZSNVBEQ728R8PJBPR80E6EFA9QX" \
   -d '{
