@@ -6,45 +6,12 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 This guide demonstrates how to use vlayer's vouch service in a fullstack Next.js application to verify GitHub contributions.
 
-
-## Architecture Overview
-
-The application follows a webhook-based architecture:
-
-```
-┌──────────┐      ┌──────────┐      ┌──────────┐      ┌──────────┐
-│ Browser  │ ───> │  vouch   │ ───> │ vlayer   │      │          │
-│ (Client) │ <─── │          │      │ Web      │ ───> │ Your App │
-│          │      │          │      │ Prover   │      │ Webhook  │
-└──────────┘      └──────────┘      └──────────┘      └──────────┘
-     │                                                      │
-     └───────────────── Fetch proof ────────────────────────┘
-```
-
-## Usage
-
-1. **Enter GitHub repository details**
-   - GitHub owner (organization or username)
-   - Repository name
-   - Your GitHub username to verify
-
-2. **Click "Start Verification"**
-   
-   The app will redirect you to vouch, which handles the proof generation process.
-
-3. **vouch processes the verification**
-   
-   vouch generates a web proof of your GitHub contributions and sends it to your webhook endpoint.
-
-4. **View your verified contributions**
-   
-   After vouch redirects back to your app, the verified proof is displayed.
-
 ## Prerequisites
 
 - [Node.js 20+](https://nodejs.org/en/download)
 - PostgreSQL database (we recommend [Neon](https://neon.tech) for serverless Postgres)
 - vouch datasource ID and customer ID
+- vouch API key (`VOUCH_API_KEY`)
 
 ## Installation
 
@@ -53,81 +20,87 @@ Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/vlayer-xyz/vouch-github-verifier.git
 cd vouch-github-verifier
-npm install
+pnpm install
+```
+
+### Environment Variables
+
+Create a `.env.local` file:
+
+```bash
+VOUCH_API_KEY=your-vouch-api-key
+NEXT_PUBLIC_WEBHOOK_URL=https://your-public-url.example.com  # optional, defaults to window.location.origin
+```
+
+### Database Setup
+
+Generate the Prisma client and run migrations:
+
+```bash
+npx prisma generate
+npx prisma migrate dev --name init
+```
+
+This creates the `web_proofs` table in your database. You can inspect it with:
+
+```bash
+npx prisma studio
 ```
 
 ## Start Development Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Visit `http://localhost:3000` to see the application.
 
-### Frontend: Initiating Verification
+## Implementation
 
-The frontend orchestrates the verification flow using the vouch SDK. View the complete implementation at [`app/page.tsx`](https://github.com/vlayer-xyz/vouch-github-verifier/blob/main/app/page.tsx).
+**1. Starting verification**
 
-#### Key Components
-
-**1. Installing vouch SDK**
-
-```bash
-npm install @getvouch/sdk
-```
-
-**2. Generating a Request ID**
+The client generates a `requestId`, then POST to `/api/start-verification` to get the vouch redirect URL:
 
 ```typescript
-import { Vouch } from '@getvouch/sdk';
-
-const startVerification = () => {
-  const vouch = new Vouch();
+const startVerification = async () => {
   const requestId = window.crypto.randomUUID();
-  
-  // Store requestId for later retrieval
   localStorage.setItem('lastRequestId', requestId);
-  
-  // ... continue with vouch setup
+
+  const webhookBaseUrl = process.env.NEXT_PUBLIC_WEBHOOK_URL || window.location.origin;
+
+  const res = await fetch('/api/start-verification', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      requestId,
+      redirectBackUrl: `${window.location.origin}?requestId=${requestId}`,
+      webhookUrl: `${webhookBaseUrl}/api/web-proof`,
+      inputs: {
+        github_owner: githubOwner,
+        github_repo: githubRepo,
+        github_username: githubUsername,
+      },
+    }),
+  });
+
+  const { verificationUrl } = await res.json();
+  window.location.href = verificationUrl;
 };
 ```
 
-The `requestId` is a UUID that links the webhook callback to the user's session. This allows your app to retrieve the correct proof after vouch redirects back.
-
-**3. Constructing the vouch URL**
-
-```typescript
-const webhookBaseUrl = process.env.NEXT_PUBLIC_WEBHOOK_URL || window.location.origin;
-
-const verificationUrl = vouch.getStartUrl({
-  requestId: requestId,
-  datasourceId: "ee72bdf7-cf47-424a-9705-75a96e39153e",
-  customerId: "1be03be8-5014-413c-835a-feddf4020da2",
-  redirectBackUrl: `${window.location.origin}?requestId=${requestId}`,
-  webhookUrl: `${webhookBaseUrl}/api/web-proof`,
-  inputs: {
-    github_owner: githubOwner,
-    github_repo: githubRepo,
-    github_username: githubUsername
-  }
-});
-
-window.location.href = verificationUrl.toString();
-```
-
 **Parameter breakdown:**
-- `requestId` - Your unique identifier for this verification session
-- `datasourceId` - vouch datasource ID for GitHub contributors
-- `customerId` - Your vouch customer ID
-- `redirectBackUrl` - Where vouch redirects after verification (includes `requestId` as query param)
-- `webhookUrl` - Your HTTPS endpoint to receive the proof
-- `inputs` - Custom data passed to the datasource (GitHub details in this case)
+- `requestId` — UUID linking this browser session to the webhook callback
+- `redirectBackUrl` — where vouch redirects after verification (includes `requestId` as query param)
+- `webhookUrl` — your HTTPS endpoint to receive the proof
+- `inputs` — custom data passed to the datasource (GitHub details in this case)
 
 <Callout type="warn">
 The `webhookUrl` must be publicly accessible via HTTPS. For local development, use a service like ngrok or deploy to Vercel.
 </Callout>
 
-**4. Fetching the Proof After Redirect**
+**2. Fetching the proof after redirect**
+
+When vouch redirects back, `requestId` is in the URL. The frontend uses it to retrieve the stored proof:
 
 ```typescript
 const searchParams = useSearchParams();
@@ -136,7 +109,7 @@ const requestId = searchParams?.get('requestId');
 useEffect(() => {
   const fetchProof = async () => {
     if (!requestId) return;
-    
+
     setLoading(true);
     try {
       const response = await fetch(`/api/web-proof/${requestId}`);
@@ -152,12 +125,38 @@ useEffect(() => {
       setLoading(false);
     }
   };
-  
+
   fetchProof();
 }, [requestId]);
 ```
 
-When vouch redirects back, the `requestId` is in the URL query parameters. The frontend uses it to fetch the proof from your database.
+### Server: Start Verification Route
+
+The `/api/start-verification` route initializes the Vouch SDK with server-side credentials and returns the redirect URL. This keeps `VOUCH_API_KEY` out of the browser. View the implementation at [`app/api/start-verification/route.ts`](https://github.com/vlayer-xyz/vouch-github-verifier/blob/main/app/api/start-verification/route.ts).
+
+```typescript
+import { Vouch } from '@getvouch/sdk';
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(request: NextRequest) {
+  const { requestId, redirectBackUrl, webhookUrl, inputs } = await request.json();
+
+  const vouch = new Vouch({
+    customerId: '1be03be8-5014-413c-835a-feddf4020da2',
+    apiKey: process.env.VOUCH_API_KEY!,
+  });
+
+  const { verificationUrl } = await vouch.getDataSourceUrl({
+    datasourceId: 'ee72bdf7-cf47-424a-9705-75a96e39153e',
+    requestId,
+    redirectBackUrl,
+    webhookUrl,
+    inputs,
+  });
+
+  return NextResponse.json({ verificationUrl });
+}
+```
 
 ### Backend: Webhook Endpoint
 
@@ -168,34 +167,63 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  try {
-    const payload = await request.json();
-    
-    // Extract requestId from payload
-    const requestId = payload.requestId || payload.request_id || null;
-    
-    // Store the proof in the database using upsert
-    await prisma.webProof.upsert({
-      where: { proofId: payload.proofId || '' },
-      update: {
-        requestId: requestId,
-        payload: payload,
-      },
-      create: {
-        proofId: payload.proofId || '',
-        requestId: requestId,
-        payload: payload,
-      },
-    });
-    
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error('Error storing web proof:', error);
-    return NextResponse.json(
-      { error: 'Failed to store web proof' },
-      { status: 500 }
-    );
+  const payload = await request.json();
+
+  const requestId = payload.requestId || null;
+
+  await prisma.webProof.upsert({
+    where: { proofId: payload.proofId || '' },
+    update: { requestId, payload },
+    create: { proofId: payload.proofId || '', requestId, payload },
+  });
+
+  return NextResponse.json({ success: true }, { status: 200 });
+}
+```
+
+### Backend: Proof Retrieval Route
+
+The `GET /api/web-proof/[requestId]` route looks up the stored proof by `requestId` so the frontend can display it after redirect. View the implementation at [`app/api/web-proof/[requestId]/route.ts`](https://github.com/vlayer-xyz/vouch-github-verifier/blob/main/app/api/web-proof/%5BrequestId%5D/route.ts).
+
+```typescript
+import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ requestId: string }> }
+) {
+  const { requestId } = await params;
+
+  const proof = await prisma.webProof.findFirst({
+    where: { requestId },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  if (!proof) {
+    return NextResponse.json({ error: 'Proof not found' }, { status: 404 });
   }
+
+  return NextResponse.json(proof);
+}
+```
+
+### Database Schema
+
+The `web_proofs` table stores the full webhook payload alongside the `requestId` used to look it up:
+
+```prisma
+model WebProof {
+  id        String   @id @default(uuid())
+  proofId   String   @unique @map("proof_id")
+  requestId String?  @map("request_id")
+  payload   Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("web_proofs")
+  @@index([proofId])
+  @@index([requestId])
+  @@index([createdAt(sort: Desc)])
 }
 ```
 
@@ -205,6 +233,6 @@ Now that you understand the vouch integration, you can:
 
 1. **Customize the UI** - Build your own proof display components
 2. **Add more datasources** - vouch supports multiple data sources beyond GitHub
-3. **Implement proof verification** - Add on-chain verification of the proofs
+3. **Verify proofs server-side** - Send `presentationJson` to the [`POST /api/v2.0/verify`](/server-side/rest-api/verify) endpoint to cryptographically verify each proof
 4. **Build custom workflows** - Use proofs for access control, airdrops, or reputation systems
 5. **Analytics and monitoring** - Track verification patterns and user behavior

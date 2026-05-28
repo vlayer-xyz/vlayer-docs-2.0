@@ -18,13 +18,14 @@ This guide shows you how to extract and verify these proofs using the [`POST /ap
 When a user completes verification through vouch, a webhook is sent to your configured `webhookUrl` containing:
 
 - **`requestId`**: Unique identifier for the verification request
+- **`dataSourceId`**: Identifier for the data source used in this verification
 - **`outputs`**: Aggregated extracted data from all web proofs
 - **`webProofs`**: Array of web proof objects, each containing:
   - **`outputs`**: Data extracted from this specific proof
   - **`presentationJson`**: The presentation object (for verification)
   - **`decodedTranscript`**: Human-readable HTTP request/response data
 
-To receive webhook responses, you need to configure a `webhookUrl` when initiating the verification flow. See the [Getting Started guide](https://docs.getvouch.io/getting-started/first-steps) or [Integration Example](https://docs.getvouch.io/examples/integration) for details on setting up webhooks.
+To receive webhook responses, you need to configure a `webhookUrl` when initiating the verification flow. See the [Vouch Getting Started guide](https://docs.getvouch.io/getting-started/first-steps) or [Vouch Integration Example](https://docs.getvouch.io/examples/integration) for details on setting up webhooks.
 
 ## Extracting and Verifying a Web Proof
 
@@ -38,20 +39,24 @@ The `presentationJson` field contains the cryptographic proof that can be verifi
     // Example webhook payload received at your endpoint
     const webhookPayload = {
       requestId: "00000000-0000-0000-0000-000000000000",
+      dataSourceId: "00000000-0000-0000-0000-000000000000",
       outputs: {
-        // ...
+        "Country": "en-US",
+        "Full Name": "Jane Doe"
       },
       webProofs: [
         {
-          outputs: { /* ... */ },
+          outputs: {
+            "Country": "en-US",
+            "Full Name": "Jane Doe"
+          },
           decodedTranscript: { /* ... */ },
           presentationJson: {
-            data: "014000000000000000db...",
+            data: "014000000000000000af5e...",
             meta: {
-              notaryUrl: "https://notary.example.com/v0.1.0-alpha.12",
-              websocketProxyUrl: "wss://proxy.example.com"
+              notaryUrl: "https://notary.production.vlayer.xyz/v2.0.0"
             },
-            version: "0.1.0-alpha.12"
+            version: "2.0.0"
           }
         }
       ]
@@ -68,20 +73,24 @@ The `presentationJson` field contains the cryptographic proof that can be verifi
     # Example webhook payload received at your endpoint
     WEBHOOK_PAYLOAD='{
       "requestId": "00000000-0000-0000-0000-000000000000",
+      "dataSourceId": "00000000-0000-0000-0000-000000000000",
       "outputs": {
-        // ...
+        "Country": "en-US",
+        "Full Name": "Jane Doe"
       },
       "webProofs": [
         {
-          "outputs": { "..." },
+          "outputs": {
+            "Country": "en-US",
+            "Full Name": "Jane Doe"
+          },
           "decodedTranscript": { "..." },
           "presentationJson": {
-            "data": "014000000000000000db...",
+            "data": "014000000000000000af5e...",
             "meta": {
-              "notaryUrl": "https://notary.example.com/v0.1.0-alpha.12",
-              "websocketProxyUrl": "wss://proxy.example.com"
+              "notaryUrl": "https://notary.production.vlayer.xyz/v2.0.0"
             },
-            "version": "0.1.0-alpha.12"
+            "version": "2.0.0"
           }
         }
       ]
@@ -104,8 +113,7 @@ Send the extracted presentation to the verification endpoint:
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-client-id': '4f028e97-b7c7-4a81-ade2-6b1a2917380c',
-        'Authorization': 'Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ'
+        'Authorization': 'Bearer <your-api-key>'
       },
       body: JSON.stringify(presentation)
     });
@@ -120,17 +128,11 @@ Send the extracted presentation to the verification endpoint:
     ```bash
     curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/verify \
       -H "Content-Type: application/json" \
-      -H "x-client-id: 4f028e97-b7c7-4a81-ade2-6b1a2917380c" \
-      -H "Authorization: Bearer jUWXi1pVUoTHgc7MOgh5X0zMR12MHtAhtjVgMc2DM3B3Uc8WEGQAEix83VwZ" \
+      -H "Authorization: Bearer <your-api-key>" \
       -d "$PRESENTATION" | jq '.'
     ```
   </Tab>
 </Tabs>
-
-<Callout type="info">
-  The included credentials are for limited public use. For production use,
-  please contact our team.
-</Callout>
 
 ### Expected Result
 
@@ -138,35 +140,39 @@ You should receive a JSON response with `"success": true` and the decoded reques
 
 ```json
 {
+  "apiVersion": "v2.0",
   "success": true,
-  "serverDomain": "example.com",
-  "notaryKeyFingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
-  "request": {
-    "method": "POST",
-    "url": "/api/v2/order/details",
-    "version": "HTTP/1.1",
-    "headers": [
-      ["content-type", "application/json"],
-      ["accept", "*/*"],
-      ["host", "XXXXXXXXXXXXXXX"],
-      ["connection", "XXXXX"]
-    ],
-    "body": "{\"orderNumber\":\"00000000000000000000\",\"createTime\":0}",
-    "raw": "504f5354202f626170692f...",
-    "parsingSuccess": true
-  },
-  "response": {
-    "status": 200,
-    "version": "HTTP/1.1",
-    "headers": [
-      ["content-type", "application/json"],
-      ["content-length", "2543"],
-      ["content-encoding", "gzip"],
-      ["date", "Mon, 01 Jan 2024 00:00:00 GMT"]
-    ],
-    "body": "{\"code\":\"000000\",\"message\":null,\"data\":{\"orderNumber\":\"00000000000000000000\",\"asset\":\"USDT\",\"amount\":\"0.00000000\",...}}",
-    "raw": "485454502f312e3120323030204f4b...",
-    "parsingSuccess": true
+  "traceId": "1c076b202cde4c9b84df2a9b1695fff3",
+  "data": {
+    "serverDomain": "www.amazon.com",
+    "notaryKeyFingerprint": "a7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af",
+    "tlsTimestamp": 1748535526,
+    "request": {
+      "method": "POST",
+      "url": "/prime-ajax/customername",
+      "version": "HTTP/1.1",
+      "headers": [
+        "accept: application/json",
+        "content-type: application/json;charset=UTF-8",
+        "host: XXXXXXXXXXXXXX",
+        "connection: XXXXX",
+        "content-length: 91"
+      ],
+      "body": "{\"location\":\"PrimePageEngagementCXCards/...\"}",
+      "raw": "504f5354202f7072696d652d616a61782f..."
+    },
+    "response": {
+      "status": 200,
+      "version": "HTTP/1.1",
+      "headers": [
+        "content-type: application/json",
+        "transfer-encoding: chunked",
+        "content-encoding: gzip",
+        "date: Thu, 21 May 2026 14:18:46 GMT"
+      ],
+      "body": "{\"payload\":{\"fullName\":\"Jane Doe\",\"locale\":\"en-US\"}}",
+      "raw": "485454502f312e3120323030204f4b..."
+    }
   }
 }
 ```
