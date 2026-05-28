@@ -25,11 +25,17 @@ pnpm install
 
 ### Environment Variables
 
-Create a `.env.local` file:
+Create a `.env.local` file for Next.js environment variables:
 
 ```bash
 VOUCH_API_KEY=your-vouch-api-key
 NEXT_PUBLIC_WEBHOOK_URL=https://your-public-url.example.com  # optional, defaults to window.location.origin
+```
+
+Prisma does **not** read `.env.local` — create a separate `.env` file for the database URL:
+
+```bash
+POSTGRES_URL=postgresql://user:password@host/dbname?sslmode=require
 ```
 
 ### Database Setup
