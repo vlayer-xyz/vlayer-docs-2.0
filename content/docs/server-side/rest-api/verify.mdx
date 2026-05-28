@@ -1,6 +1,6 @@
 ---
 title: POST /verify
-description: Verify Web Proof (v2)
+description: Verify Web Proofs
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -31,7 +31,7 @@ Requests require header:
 Send the `data` object from the `/api/v2.0/prove` response directly as the request body.
 
 * `data`: Hex-encoded proof data
-* `version`: Web Proof format version. Accepted values: `"0.1.0-alpha.12"`, `"2.0.0"`
+* `version`: Web Proof format version. Accepted values: `"0.1.0-alpha.12"` (server-side proving), `"2.0.0"` (Vouch, client-side proving)
 * `meta`: Metadata object
   * `notaryUrl`: URL of the notary server used during proving
 
