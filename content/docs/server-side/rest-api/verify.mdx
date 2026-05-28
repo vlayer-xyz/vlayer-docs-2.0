@@ -31,9 +31,9 @@ Requests require header:
 Send the `data` object from the `/api/v2.0/prove` response directly as the request body.
 
 * `data`: Hex-encoded proof data
-* `version`: TLSN protocol version. Must be `"0.1.0-alpha.12"`
+* `version`: TLSN protocol version. Vouch-generated proofs use `"2.0.0"`
 * `meta`: Metadata object
-* `notaryUrl`: URL of the notary server used during proving
+* `notaryUrl`: URL of the notary server used during proving (e.g. `"https://notary.production.vlayer.xyz/v2.0.0"`)
 
 ## Response Body
 
@@ -101,9 +101,9 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
       -H "Authorization: Bearer <your-api-key>" \
       -d '{
         "data": "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
-        "version": "0.1.0-alpha.12",
+        "version": "2.0.0",
         "meta": {
-          "notaryUrl": "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+          "notaryUrl": "https://notary.production.vlayer.xyz/v2.0.0"
         }
       }'
     ```
@@ -111,12 +111,12 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
 
   <Tab value="javascript">
     ```javascript
-    // presentation object from /api/v2.0/prove response
+    // presentation object — the presentationJson field from a vouch webhook payload
     const presentation = {
       data: "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
-      version: "0.1.0-alpha.12",
+      version: "2.0.0",
       meta: {
-        notaryUrl: "https://notary.vlayer.xyz/v0.1.0-alpha.12"
+        notaryUrl: "https://notary.production.vlayer.xyz/v2.0.0"
       }
     };
 
@@ -124,7 +124,6 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-client-id': '<your-client-id>',
         'Authorization': 'Bearer <your-api-key>'
       },
       body: JSON.stringify(presentation)

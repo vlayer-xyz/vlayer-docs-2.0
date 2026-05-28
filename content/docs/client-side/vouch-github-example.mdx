@@ -29,6 +29,7 @@ Create a `.env.local` file for Next.js environment variables:
 
 ```bash
 VOUCH_API_KEY=your-vouch-api-key
+VOUCH_WEBHOOK_SECRET=your-webhook-secret   # from Vouch dashboard → Organization → Webhook Secret
 NEXT_PUBLIC_WEBHOOK_URL=https://your-public-url.example.com  # optional, defaults to window.location.origin
 ```
 
@@ -169,18 +170,46 @@ export async function POST(request: NextRequest) {
 The webhook endpoint receives proofs from vouch and stores them in the database. View the complete implementation at [`app/api/web-proof/route.ts`](https://github.com/vlayer-xyz/vouch-github-verifier/blob/main/app/api/web-proof/route.ts).
 
 ```typescript
+import { timingSafeEqual, createHash } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
+function verifyPsk(authHeader: string | null): boolean {
+  const secret = process.env.VOUCH_WEBHOOK_SECRET;
+  if (!secret || !authHeader) return false;
+
+  const expected = `PSK ${secret}`;
+
+  // Hash both sides so timingSafeEqual always operates on equal-length buffers
+  const expectedHash = createHash('sha256').update(expected).digest();
+  const actualHash   = createHash('sha256').update(authHeader).digest();
+
+  return timingSafeEqual(expectedHash, actualHash);
+}
+
 export async function POST(request: NextRequest) {
+  // Authenticate before touching the body
+  if (!verifyPsk(request.headers.get('authorization'))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const payload = await request.json();
 
-  const requestId = payload.requestId || null;
+  const proofId   = payload.proofId?.trim()   || null;
+  const requestId = payload.requestId?.trim() || null;
+
+  // Use proofId if present, fall back to requestId (v2.0 payloads omit proofId)
+  const uniqueKey = proofId ?? requestId;
+
+  if (!uniqueKey) {
+    console.error('Webhook rejected: payload contains neither proofId nor requestId');
+    return NextResponse.json({ error: 'Missing proof identifier' }, { status: 400 });
+  }
 
   await prisma.webProof.upsert({
-    where: { proofId: payload.proofId || '' },
+    where: { proofId: uniqueKey },
     update: { requestId, payload },
-    create: { proofId: payload.proofId || '', requestId, payload },
+    create: { proofId: uniqueKey, requestId, payload },
   });
 
   return NextResponse.json({ success: true }, { status: 200 });
