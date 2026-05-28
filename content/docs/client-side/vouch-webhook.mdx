@@ -54,10 +54,9 @@ The `presentationJson` field contains the cryptographic proof that can be verifi
           presentationJson: {
             data: "014000000000000000af5e...",
             meta: {
-              // notaryUrl identifies the notary server and TLSN protocol version used
-              notaryUrl: "https://notary.production.vlayer.xyz/v2.0.0"
+              notaryUrl: "https://notary.production.vlayer.xyz/v2.0.0",
+              websocketProxyUrl: "ws://proxy.vlayer.xyz:80"
             },
-            // TLSN protocol version — vouch produces "2.0.0" proofs
             version: "2.0.0"
           }
         }
@@ -90,9 +89,10 @@ The `presentationJson` field contains the cryptographic proof that can be verifi
           "presentationJson": {
             "data": "014000000000000000af5e...",
             "meta": {
-              "notaryUrl": "https://notary.production.vlayer.xyz/v2.0.0"
+              "notaryUrl": "https://notary.production.vlayer.xyz/v2.0.0",
+              "websocketProxyUrl": "ws://proxy.vlayer.xyz:80"
             },
-            "version": "2.0.0"    // TLSN protocol version used by vouch
+            "version": "2.0.0"
           }
         }
       ]

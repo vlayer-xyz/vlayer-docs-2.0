@@ -1,6 +1,12 @@
 {
   "permissions": {
     "allow": [
+      "Bash(gh api *)",
+      "Bash(curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/prove *)",
+      "Bash(curl -s -X POST https://web-prover.production.vlayer.xyz/api/v2.0/verify *)",
+      "Read(//tmp/**)"
+    ],
+    "additionalDirectories": []
       "WebFetch(domain:docs.getvouch.io)"
     ]
   }
