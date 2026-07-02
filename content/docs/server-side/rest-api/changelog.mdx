@@ -89,3 +89,7 @@ The `headers` arrays in the `request` and `response` objects changed format for 
 |---|---|
 | v1 | `https://test-notary.vlayer.xyz/v0.1.0-alpha.12` |
 | v2 | `https://notary.vlayer.xyz/v0.1.0-alpha.12` |
+
+## /prove: Expanded redaction
+
+The v2 `redaction` field previously covered only request headers. It now also redacts request URL query parameters (`request.url_query`), response headers (`response.headers`), and JSON fields in the response body (`response.json_body`). Each field has a matching `*_except` allowlist that reveals only the listed values. See [POST /prove](/server-side/rest-api/prove) for details.

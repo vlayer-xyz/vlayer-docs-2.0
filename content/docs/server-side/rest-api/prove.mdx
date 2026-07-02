@@ -26,9 +26,22 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
 * `body`: Request body data for POST requests as a string
 * `notaryUrl`: URL of the notary server for TLS notarization. Defaults to `https://notary.vlayer.xyz/v0.1.0-alpha.12`
 * `maxRecvData`: Optional maximum number of bytes to receive from the server. Must not exceed `92160`
-* `redaction`: Optional array of redaction rules for controlling which request headers are included in the Web Proof. Supports two mutually exclusive modes:
-  * `request.headers`: Specify headers to redact (hide) from the proof — all other headers are revealed
-  * `request.headers_except`: Specify headers to reveal in the proof — all other headers are redacted
+* `redaction`: Optional array of redaction rules controlling which parts of the request and response are revealed in the Web Proof. Each rule targets `request` and/or `response`, and rules accumulate across the array.
+
+  Every field supports two mutually exclusive modes: a denylist (list what to hide, revealing everything else) or the matching `*_except` allowlist (list what to reveal, hiding everything else). Listing both a denylist and an allowlist for the same field is rejected with a `400`. A field named in neither reveals everything.
+
+  <Callout type="info">
+    Field names inside a redaction rule are snake_case (e.g. `headers_except`, `url_query`, `json_body`), unlike the camelCase top-level request fields.
+  </Callout>
+
+  Supported fields:
+
+  | Field | Reveal-all-but | Redacts |
+  |---|---|---|
+  | `request.headers` | `request.headers_except` | Request headers |
+  | `request.url_query` | `request.url_query_except` | Request URL query parameters |
+  | `response.headers` | `response.headers_except` | Response headers |
+  | `response.json_body` | `response.json_body_except` | JSON fields in the response body |
 
 ## Response Body
 
@@ -176,3 +189,26 @@ This example makes an authenticated Gmail API request while redacting the `Autho
     ```
   </Tab>
 </Tabs>
+
+### Redacting request, response, and body fields
+
+Redaction rules can target the request and response together. This example redacts a request header and query parameter, reveals only the `content-type` response header, and keeps only the `balance` field of the JSON response body:
+
+```json
+{
+  "url": "https://api.example.com/account?token=secret",
+  "headers": ["Authorization: Bearer <token>"],
+  "redaction": [
+    {
+      "request": {
+        "headers": ["authorization"],
+        "url_query": ["token"]
+      },
+      "response": {
+        "headers_except": ["content-type"],
+        "json_body_except": ["balance"]
+      }
+    }
+  ]
+}
+```
