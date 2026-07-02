@@ -92,4 +92,4 @@ The `headers` arrays in the `request` and `response` objects changed format for 
 
 ## /prove: Expanded redaction
 
-The v2 `redaction` field previously covered only request headers. It now also redacts request URL query parameters (`request.url_query`), response headers (`response.headers`), and JSON fields in the response body (`response.json_body`). Each field has a matching `*_except` allowlist that reveals only the listed values. See [POST /prove](/server-side/rest-api/prove) for details.
+v1 could only redact request headers. v2 extends the `redaction` field to also redact request URL query parameters (`request.url_query`), response headers (`response.headers`), and JSON fields in the response body (`response.json_body`). Each field has a matching `*_except` allowlist that reveals only the listed values. See [POST /prove](/server-side/rest-api/prove) for details.
