@@ -26,7 +26,7 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
 * `body`: Request body data for POST requests as a string
 * `notaryUrl`: URL of the notary server for TLS notarization. Defaults to `https://notary.vlayer.xyz/v0.1.0-alpha.12`
 * `maxRecvData`: Optional maximum number of bytes to receive from the server. Must not exceed `92160`
-* `redaction`: Optional array of redaction rules controlling which parts of the request and response are revealed in the Web Proof
+* `redaction`: Optional array of redaction rules controlling which parts of the request and response are revealed in the Web Proof (see below)
 
 ### Redaction
 
