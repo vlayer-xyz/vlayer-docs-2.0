@@ -26,22 +26,26 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
 * `body`: Request body data for POST requests as a string
 * `notaryUrl`: URL of the notary server for TLS notarization. Defaults to `https://notary.vlayer.xyz/v0.1.0-alpha.12`
 * `maxRecvData`: Optional maximum number of bytes to receive from the server. Must not exceed `92160`
-* `redaction`: Optional array of redaction rules controlling which parts of the request and response are revealed in the Web Proof. Each rule targets `request` and/or `response`, and rules accumulate across the array.
+* `redaction`: Optional array of redaction rules controlling which parts of the request and response are revealed in the Web Proof. See [Redaction](#redaction)
 
-  Every field supports two mutually exclusive modes: a denylist (list what to hide, revealing everything else) or the matching `*_except` allowlist (list what to reveal, hiding everything else). Listing both a denylist and an allowlist for the same field is rejected with a `400`. A field named in neither reveals everything.
+### Redaction
 
-  <Callout type="info">
-    Field names inside a redaction rule are snake_case (e.g. `headers_except`, `url_query`, `json_body`), unlike the camelCase top-level request fields.
-  </Callout>
+Each rule in the `redaction` array targets `request` and/or `response`, and rules accumulate across the array.
 
-  Supported fields:
+Every field supports two mutually exclusive modes: a denylist (list what to hide, revealing everything else) or the matching `*_except` allowlist (list what to reveal, hiding everything else). Listing both a denylist and an allowlist for the same field is rejected with a `400`. A field named in neither reveals everything.
 
-  | Field | Reveal-all-but | Redacts |
-  |---|---|---|
-  | `request.headers` | `request.headers_except` | Request headers |
-  | `request.url_query` | `request.url_query_except` | Request URL query parameters |
-  | `response.headers` | `response.headers_except` | Response headers |
-  | `response.json_body` | `response.json_body_except` | JSON fields in the response body |
+<Callout type="info">
+  Field names inside a redaction rule are snake_case (e.g. `headers_except`, `url_query`, `json_body`), unlike the camelCase top-level request fields.
+</Callout>
+
+Supported fields:
+
+| Field | Reveal-all-but | Redacts |
+|---|---|---|
+| `request.headers` | `request.headers_except` | Request headers |
+| `request.url_query` | `request.url_query_except` | Request URL query parameters |
+| `response.headers` | `response.headers_except` | Response headers |
+| `response.json_body` | `response.json_body_except` | JSON fields in the response body |
 
 ## Response Body
 
