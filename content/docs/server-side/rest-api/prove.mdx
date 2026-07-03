@@ -3,6 +3,7 @@ title: POST /prove
 description: Generate Web Proof (v2)
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
 # POST /api/v2.0/prove
@@ -34,6 +35,10 @@ Redaction lets you hide sensitive data — like API keys or tokens — from the 
 Each rule in the `redaction` array targets `request` and/or `response`, and rules accumulate across the array.
 
 Every field supports two mutually exclusive modes: a denylist (list what to hide, revealing everything else) or the matching `*_except` allowlist (list what to reveal, hiding everything else). Listing both a denylist and an allowlist for the same field is rejected with a `400`. A field named in neither reveals everything.
+
+<Callout type="info">
+  Field names inside a redaction rule are snake_case (e.g. `headers_except`, `url_query`, `json_body`), unlike the camelCase top-level request fields.
+</Callout>
 
 Supported fields:
 
