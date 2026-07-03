@@ -92,4 +92,14 @@ The `headers` arrays in the `request` and `response` objects changed format for 
 
 ## /prove: Expanded redaction
 
-The `redaction` field redacts request headers, request URL query parameters (`request.url_query`), response headers (`response.headers`), and JSON fields in the response body (`response.json_body`). Each field has a matching `*_except` allowlist that reveals only the listed values. See [POST /prove](/server-side/rest-api/prove) for details.
+The `redaction` field lets you hide sensitive data from the request and response.
+
+You can redact:
+- Request headers: `request.headers`
+- Request URL query parameters: `request.url_query`
+- Response headers: `response.headers`
+- JSON fields in the response body: `response.json_body`
+
+Each redaction field also has a matching `*_except` allowlist. Use it to show only the values you want to keep visible.
+
+For more details, see [POST /prove](/server-side/rest-api/prove).
