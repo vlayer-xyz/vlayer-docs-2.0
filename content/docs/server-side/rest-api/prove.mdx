@@ -44,7 +44,7 @@ Supported fields:
 | `response.headers` | `response.headers_except` | Response headers |
 | `response.json_body` | `response.json_body_except` | JSON fields in the response body |
 
-Four headers are always revealed in both the request and the response, regardless of redaction rules: `content-length`, `transfer-encoding`, `content-type`, and `content-encoding`. They carry no secrets and are required to verify the proof. Listing one of them in a denylist has no effect, and `*_except` allowlists reveal them automatically. Header names are matched case-insensitively.
+Four headers are always revealed in both the request and the response, regardless of redaction rules: `content-length`, `transfer-encoding`, `content-type`, and `content-encoding`. They carry no secrets and are required to verify the proof. Listing one of them in a denylist has no effect, and `*_except` allowlists reveal them automatically.
 
 ## Response Body
 
