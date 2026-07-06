@@ -89,3 +89,17 @@ The `headers` arrays in the `request` and `response` objects changed format for 
 |---|---|
 | v1 | `https://test-notary.vlayer.xyz/v0.1.0-alpha.12` |
 | v2 | `https://notary.vlayer.xyz/v0.1.0-alpha.12` |
+
+## /prove: Expanded redaction
+
+The `redaction` field lets you hide sensitive data from the request and response.
+
+You can redact:
+- Request headers: `request.headers`
+- Request URL query parameters: `request.url_query`
+- Response headers: `response.headers`
+- JSON fields in the response body: `response.json_body`
+
+Each redaction field also has a matching `*_except` allowlist. Use it to show only the values you want to keep visible.
+
+For more details, see [POST /prove](/server-side/rest-api/prove).
