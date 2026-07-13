@@ -4,6 +4,10 @@ title: Tutorial - Deploying RiscZeroMockVerifier Contract
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
+<Callout type="warn">
+**Service Availability**: The ZK Prover Server is currently turned off and not publicly available. If you would like to use it, please contact vlayer support at [support@vlayer.xyz](mailto:support@vlayer.xyz).
+</Callout>
+
 # RiscZeroMockVerifier
 
 The [`RiscZeroMockVerifier`](https://github.com/risc0/risc0-ethereum/blob/d04a053901c9cb4e0f6cc599d5b4f21dccdbb3f8/contracts/src/test/RiscZeroMockVerifier.sol#L37) is a test-only mock verifier from the RISC Zero library. It implements the [`IRiscZeroVerifier`](https://dev.risczero.com/api/blockchain-integration/contracts/verifier) interface but bypasses cryptographic verification, making it ideal for development and testing workflows.
