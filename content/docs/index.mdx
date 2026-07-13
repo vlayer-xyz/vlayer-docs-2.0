@@ -2,6 +2,8 @@
 title: What is vlayer
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 **vlayer** enables developers to extract, verify and integrate real-world data. Powered by [**TLSNotary**](https://tlsnotary.org/about), vlayer uses **Zero Knowledge Proofs (ZKP)** and **Multi-Party Computation (MPC)** to securely verify private data without exposing sensitive information.
 
 ## vlayer web proofs
@@ -25,6 +27,10 @@ The web prover server handles the complete proof generation lifecycle, from exec
 Client-side proving is the preferred solution for scenarios requiring proof of access to user-specific, cookie-authenticated resources such as social media accounts, banking portals, personal email, Web2 loyalty programs, reputation scores, or any platform where authentication relies on browser sessions rather than transferable API tokens. The vouch extension operates within the user's browser context, preserving privacy while generating cryptographic proofs of the underlying HTTP transactions.
 
 ## ZK proving
+
+<Callout type="warn">
+**Service Availability**: The ZK Prover Server is currently turned off and not publicly available. If you would like to use it, please contact vlayer support at [support@vlayer.xyz](mailto:support@vlayer.xyz).
+</Callout>
 
 [ZK proving](/blockchain/introduction) provides a REST API for compressing web proofs into succinct zero-knowledge proofs optimized for blockchain integration. Unlike server-side and client-side proving which generate standard web proofs suitable for any environment, ZK proving specifically addresses the constraints of on-chain storage and verification by dramatically reducing proof size while maintaining full cryptographic integrity.
 
