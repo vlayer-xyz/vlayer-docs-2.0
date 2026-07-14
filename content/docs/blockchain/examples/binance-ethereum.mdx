@@ -264,7 +264,7 @@ async function deployContract() {
   return receipt.contractAddress!;
 }
 
-async function updatePrice(contractAddress: `0x${string}`, zkProofResponse: any) {
+async function updatePrice(contractAddress: `0x${string}`, symbol: string, zkProofResponse: any) {
   const { zkProof, journalDataAbi } = zkProofResponse.data;
   
 
@@ -304,5 +304,5 @@ const zkProofResponse = {
 
 // Deploy and use
 const contractAddress = await deployContract();
-await updatePrice(contractAddress, zkProofResponse);
+await updatePrice(contractAddress, 'ETHUSDC', zkProofResponse);
 ```
