@@ -284,7 +284,9 @@ export function AISearchTrigger() {
   };
 
   const onKeyPressRef = useRef(onKeyPress);
-  onKeyPressRef.current = onKeyPress;
+  useEffect(() => {
+    onKeyPressRef.current = onKeyPress;
+  }, [onKeyPress]);
   useEffect(() => {
     const listener = (e: KeyboardEvent) => onKeyPressRef.current(e);
     window.addEventListener('keydown', listener);
