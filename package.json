@@ -10,14 +10,14 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.0",
-    "@ai-sdk/react": "^2.0.72",
+    "@ai-sdk/anthropic": "^4.0.48",
+    "@ai-sdk/react": "^4.0.93",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^7.9.1",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "@radix-ui/react-presence": "^1.1.5",
-    "ai": "^5.0.72",
+    "ai": "^7.0.90",
     "class-variance-authority": "^0.7.1",
     "fumadocs-core": "16.15.4",
     "fumadocs-mdx": "15.4.0",
