@@ -1,5 +1,5 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { convertToCoreMessages, streamText } from 'ai';
+import { convertToModelMessages, streamText } from 'ai';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { getLLMText, source } from '@/lib/source';
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
 
 Documentation:
 ${docsContext}`,
-      messages: convertToCoreMessages(messages),
+      messages: await convertToModelMessages(messages),
       onFinish: async () => {
         const userText = (() => {
           if (!lastUser) return '';
