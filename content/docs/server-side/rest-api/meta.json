@@ -1,4 +1,4 @@
 {
   "title": "REST API",
-  "pages": ["prove", "verify", "changelog"]
+  "pages": ["prove", "verify", "verify-batch", "changelog"]
 }

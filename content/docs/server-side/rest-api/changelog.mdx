@@ -64,6 +64,8 @@ v2 errors include a machine-readable `code` field alongside the human-readable m
 
 Error codes returned by `/verify`: `INVALID_REQUEST`, `INVALID_PRESENTATION`, `INTERNAL_SERVER_ERROR`
 
+Error codes returned by `/verify-batch` before any proof is verified: `INVALID_REQUEST`, `PAYLOAD_TOO_LARGE`, `INTERNAL_SERVER_ERROR`. An accepted batch returns HTTP 200, and a failed item reports `INVALID_PRESENTATION` or `INTERNAL_SERVER_ERROR` on its own result. See [POST /verify-batch](/server-side/rest-api/verify-batch).
+
 Error codes returned by `/prove`: `INVALID_REQUEST`, `INTERNAL_SERVER_ERROR`
 
 ## Strict request validation
@@ -103,3 +105,7 @@ You can redact:
 Each redaction field also has a matching `*_except` allowlist. Use it to show only the values you want to keep visible.
 
 For more details, see [POST /prove](/server-side/rest-api/prove).
+
+## /verify-batch
+
+v2 adds [`POST /api/v2.0/verify-batch`](/server-side/rest-api/verify-batch). It accepts 1 to 32 Web Proofs and returns one result per proof, in request order. HTTP 200 means every proof was attempted. Each proof is reported on its own result, including proofs that fail verification.
