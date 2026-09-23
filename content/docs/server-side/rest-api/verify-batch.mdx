@@ -1,0 +1,181 @@
+---
+title: POST /verify-batch
+description: Verify multiple Web Proofs
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# POST /api/v2.0/verify-batch
+
+Verify up to 32 Web Proofs in one request. Each item is verified the same way as [`POST /api/v2.0/verify`](/server-side/rest-api/verify): the HTTPS transcript, the notary signature, and the server certificate are checked, and the decoded HTTP transcript is returned.
+
+<Callout type="info">
+HTTP 200 means every proof in the batch was attempted. `success: true` on the envelope does not mean every proof verified. Read `success` on each item in `data.results`.
+</Callout>
+
+## Authentication
+
+Requests require header:
+
+* `Authorization: Bearer <api-key>`: Your API key
+
+## Request Body
+
+All field names must be in camelCase. Unknown fields are rejected with a `400` error.
+
+* `proofs`: Array of 1 to 32 Web Proofs. An empty array, or more than 32 items, is rejected with `400 INVALID_REQUEST` before any proof is verified
+  * `id`: Optional caller-defined string. It is copied onto that item's result, and omitted from the result when the request omitted it
+  * `data`: Hex-encoded proof data. Hex is checked while parsing the JSON body, so one malformed `data` string rejects the whole request
+  * `version`: Web Proof format version. Accepted values: `"0.1.0-alpha.12"` (server-side proving), `"2.0.0"` (Vouch, client-side proving)
+  * `meta`: Metadata object
+    * `notaryUrl`: URL of the notary server used during proving
+    * `websocketProxyUrl`: Optional websocket proxy URL recorded with the proof
+
+The maximum body size on this route is 32 MiB.
+
+A `presentationJson` object from a Vouch webhook, or the `data` object from [`POST /api/v2.0/prove`](/server-side/rest-api/prove), can be placed in `proofs` as-is. Add `id` when you want that label on the result.
+
+## Response Body
+
+### Success
+
+Results stay in request order. `index` is the 0-based position in `proofs`.
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": true,
+  "data": {
+    "results": [
+      {
+        "index": 0,
+        "id": "proof-a",
+        "success": true,
+        "data": {
+          "serverDomain": "data-api.binance.vision",
+          "notaryKeyFingerprint": "a7e62d7f17aa7a22c26bdb93b7ce9400e826ffb2c6f54e54d2ded015677499af",
+          "tlsTimestamp": 1758284634,
+          "request": { ... },
+          "response": { ... }
+        }
+      },
+      {
+        "index": 1,
+        "id": "proof-b",
+        "success": false,
+        "error": {
+          "code": "INVALID_PRESENTATION",
+          "message": "..."
+        }
+      }
+    ]
+  }
+}
+```
+
+* **`apiVersion`**: API version string
+* **`success`**: `true` when the batch was accepted. Check each result for whether that proof verified
+* **`data.results`**: One entry per proof, in request order
+  * **`index`**: Position of this proof in `proofs`
+  * **`id`**: The request `id`, when one was sent
+  * **`success`**: `true` when this proof verified
+  * **`data`**: Present when `success` is `true`. Same object [`POST /api/v2.0/verify`](/server-side/rest-api/verify) returns: `serverDomain`, `notaryKeyFingerprint`, `tlsTimestamp`, `request`, and `response`
+  * **`error`**: Present when `success` is `false`. A failed item has no `data`
+
+Per-item `error.code` values:
+
+* `INVALID_PRESENTATION` — `data` decoded, but it is not a valid presentation for the declared `version`
+* `INTERNAL_SERVER_ERROR` — verification or transcript parsing failed. The message is `Internal server error`
+
+### Error
+
+These responses reject the request before any proof is verified.
+
+```json
+{
+  "apiVersion": "v2.0",
+  "success": false,
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Invalid request: ..."
+  }
+}
+```
+
+* **`error.code`**: Machine-readable error code. Possible values:
+  * `INVALID_REQUEST` — malformed body, including missing or unknown fields, malformed hex, a missing `Content-Type`, an empty `proofs` array, or more than 32 proofs (400)
+  * `PAYLOAD_TOO_LARGE` — body is larger than 32 MiB (413)
+  * `INTERNAL_SERVER_ERROR` — the server could not finish the batch (500)
+* **`error.message`**: Human-readable description. The values returned here may change over time, use `error.code` for stable error indication
+
+## Example
+
+<Tabs items={['bash', 'javascript']}>
+  <Tab value="bash">
+    ```bash
+    curl -X POST https://web-prover.production.vlayer.xyz/api/v2.0/verify-batch \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer <your-api-key>" \
+      -d '{
+        "proofs": [
+          {
+            "id": "proof-a",
+            "data": "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
+            "version": "2.0.0",
+            "meta": {
+              "notaryUrl": "https://notary.production.vlayer.xyz/v2.0.0"
+            }
+          },
+          {
+            "id": "proof-b",
+            "data": "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
+            "version": "2.0.0",
+            "meta": {
+              "notaryUrl": "https://notary.production.vlayer.xyz/v2.0.0"
+            }
+          }
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab value="javascript">
+    ```javascript
+    const webhookPayload = {
+      webProofs: [
+        {
+          presentationJson: {
+            data: "014000000000000000899cdccd31337c96bb9e519aa438ed73cdb47dda5c80e995ef0a1c04bf6c563730cde41724dafc1391b1b81acc5d989a7f7add8...",
+            version: "2.0.0",
+            meta: {
+              notaryUrl: "https://notary.production.vlayer.xyz/v2.0.0"
+            }
+          }
+        }
+      ]
+    };
+
+    const proofs = webhookPayload.webProofs.map((proof, index) => ({
+      id: String(index),
+      ...proof.presentationJson
+    }));
+
+    const response = await fetch('https://web-prover.production.vlayer.xyz/api/v2.0/verify-batch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer <your-api-key>'
+      },
+      body: JSON.stringify({ proofs })
+    });
+
+    const result = await response.json();
+    for (const item of result.data?.results ?? []) {
+      if (!item.success) {
+        console.error(item.index, item.error);
+      }
+    }
+    ```
+  </Tab>
+</Tabs>

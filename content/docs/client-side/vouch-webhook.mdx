@@ -11,7 +11,7 @@ import { Tabs, Tab } from "fumadocs-ui/components/tabs";
 </Callout>
 
 When using the [vouch platform](https://docs.getvouch.io/introduction) to generate web proofs, you’ll receive webhook responses that include both the proof and the associated data.
-This guide shows you how to extract and verify these proofs using the [`POST /api/v2.0/verify`](/server-side/rest-api/verify) endpoint.
+This guide shows you how to extract and verify these proofs using the [`POST /api/v2.0/verify`](/server-side/rest-api/verify) endpoint. When a webhook includes more than one proof, send them together to [`POST /api/v2.0/verify-batch`](/server-side/rest-api/verify-batch).
 
 ## Webhook Response Structure
 

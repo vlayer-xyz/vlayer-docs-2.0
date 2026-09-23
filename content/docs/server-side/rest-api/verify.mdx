@@ -8,7 +8,7 @@ import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
 # POST /api/v2.0/verify
 
-Verify a previously generated Web Proof. The verification process:
+Verify a previously generated Web Proof. To verify up to 32 proofs in one request, use [`POST /api/v2.0/verify-batch`](/server-side/rest-api/verify-batch). The verification process:
 
 * **Verifies the HTTPS transcript** - Confirms the integrity of the recorded HTTP request/response data
 * **Verifies the Notary's signature** - Validates the cryptographic signature from the trusted notary service
