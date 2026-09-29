@@ -9,7 +9,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 vlayer runs notary servers which notarize HTTP requests performed by calling [`/prove`](/server-side/rest-api/prove). The notary signs the Web Proof with its key. Thus, in order to trust given Web Proof, the identity of the notary - fingerprint of the key returned by [`/verify`](/server-side/rest-api/verify) - needs to be verified.
 
-Trusted identities of vlayer notary servers are identified by the authoritative [notary key list](https://keys.vlayer.xyz/notary-keys.production.json). Its format is defined by the [JSON schema](https://keys.vlayer.xyz/schema.json).
+Trusted identities of vlayer notary servers are specified by the authoritative [notary key list](https://keys.vlayer.xyz/notary-keys.production.json). Its format is defined by the [JSON schema](https://keys.vlayer.xyz/schema.json).
 
 <Callout type="warn">
 Treat a proof as trusted only when its `notaryKeyFingerprint` returned by [`/verify`](/server-side/rest-api/verify) matches an entry in the list and:
