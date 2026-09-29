@@ -116,7 +116,7 @@ Now we'll create a **secure** Solidity smart contract that verifies the ZK proof
 1. **Notary Key Fingerprint Validation** - Ensures the proof comes from a trusted notary
 2. **Extraction Hash Validation** - Ensures the correct fields were extracted (prevents field substitution attacks)
 3. **ZK Proof Verification** - Cryptographically proves the extraction was correct
-4. **Timestamp Recording** - Stores the notarized timestamp from the Web Proof alongside the price
+4. **Timestamp Verification** - Uses the notarized timestamp from the Web Proof, not block time
 5. **ABI Decoding Pattern** - Uses `abi.decode` to extract structured data from the `journalDataAbi` (RISC Zero's [journal](https://dev.risczero.com/proof-system/) format)
 
 This contract uses the [RISC Zero Verifier Router](https://dev.risczero.com/api/blockchain-integration/contracts/verifier) for on-chain verification.

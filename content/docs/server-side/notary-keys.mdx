@@ -7,16 +7,16 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 # Trusted notary keys
 
-Cryptographic verification proves that a presentation is internally valid and was signed by the key identified in the result. It does not prove that vlayer trusted that key when the TLS session occurred.
+vlayer runs notary servers which notarize HTTP requests performed by calling [`/prove`](/server-side/rest-api/prove). The notary signs the Web Proof with its key. Thus, in order to trust given Web Proof, the identity of the notary - fingerprint of the key returned by [`/verify`](/server-side/rest-api/verify) - needs to be verified.
 
-For production, use the authoritative [notary key list](https://keys.vlayer.xyz/notary-keys.production.json). Its format is defined by the [JSON schema](https://keys.vlayer.xyz/schema.json).
+Trusted identities of vlayer notary servers are identified by the authoritative [notary key list](https://keys.vlayer.xyz/notary-keys.production.json). Its format is defined by the [JSON schema](https://keys.vlayer.xyz/schema.json).
 
 <Callout type="warn">
-Treat a proof as trusted only when its returned `notaryKeyFingerprint` matches an entry in the list and:
+Treat a proof as trusted only when its `notaryKeyFingerprint` returned by [`/verify`](/server-side/rest-api/verify) matches an entry in the list and:
 
 `validFrom <= tlsTimestamp < validUntil`
 
-When `validUntil` is `null`, there is no upper bound. `tlsTimestamp` is the Unix timestamp from the verified TLS session.
+When `validUntil` is `null`, there is no upper bound. `tlsTimestamp` is the Unix timestamp from the verified TLS session returned by [`/verify`](/server-side/rest-api/verify).
 </Callout>
 
 The list can contain concurrent keys during a rotation and retired keys needed to verify older proofs. Do not select only the newest entry: select the matching fingerprint, then apply that entry's validity window. Fields under `meta`, including `notaryUrls`, are informational and must not be used as trust inputs.
@@ -25,8 +25,4 @@ The list can contain concurrent keys during a rotation and retired keys needed t
 
 Fetch the list over HTTPS and follow its `Cache-Control` header. When the cached response expires, refresh it with `If-None-Match` so the server can return `304 Not Modified` when the list is unchanged. Treat a copy that you could not refresh as stale.
 
-## Cross-checking a fingerprint
-
-Each entry includes the notary public key and states the fingerprint algorithm. For the current format, parse `publicKeyPem`, extract its compressed SEC1 public-key bytes, compute SHA-256 over those bytes, and encode the digest as lowercase hexadecimal. The result must equal the entry's `fingerprint`. Use a maintained cryptography library rather than hashing the PEM text or the complete DER/SPKI wrapper.
-
-The list is also the source of truth for `bytes32` expected-notary-fingerprint constants used by on-chain verifiers. A contract that stores one immutable fingerprint must be upgraded or redeployed when key rotation requires it to accept a new key.
+For more information, see the [notary-keys repository README](https://github.com/vlayer-xyz/notary-keys#readme).
