@@ -16,7 +16,7 @@ Generate a ZK proof from a Web Proof. The process:
 
 * **Verifies the Web Proof**:
   * **Verifies the HTTP transcript** - Confirms the integrity of the recorded HTTP request/response data
-  * **Verifies the Notary's signature** - Validates the cryptographic signature from the signing key
+  * **Verifies the Notary's signature** - Validates the cryptographic signature from the trusted notary service
   * **Confirms data origin** - Ensures the data comes from the expected domain specified in the original request
   * **SSL certificate validation** - Verifies the server's SSL certificate and its complete chain of authority
   * **Extracts plain text transcript** - Retrieves the verified HTTP request/response data for further processing
@@ -66,7 +66,7 @@ All field names must be in camelCase. Unknown fields are rejected with a `400` e
 * **`apiVersion`**: API version string
 * **`success`**: `true`
 * **`data.zkProof`**: Serialized ZK proof data (seal) - used to verify the proof on-chain
-* **`data.journalDataAbi`**: ABI-encoded public outputs containing verified Web Proof data - used as the claim being proven. Validate its notary fingerprint and TLS timestamp using the [trusted notary key list](/server-side/notary-keys)
+* **`data.journalDataAbi`**: ABI-encoded public outputs containing verified Web Proof data - used as the claim being proven
 
 <Callout type="info">
 Looking for decode info (types, values, Solidity snippet)? Use [`POST /api/v2.0/debug/evm/journal-decode-helper`](/blockchain/rest-api/journal-decode-helper) with the same request body.

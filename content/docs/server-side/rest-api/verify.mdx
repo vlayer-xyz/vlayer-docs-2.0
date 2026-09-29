@@ -57,7 +57,7 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
 * **`success`**: `true`
 * **`data.serverDomain`**: Domain name of the server that was contacted
 * **`data.notaryKeyFingerprint`**: SHA-256 fingerprint of the notary's public key. It must match an entry in the [trusted notary key list](/server-side/notary-keys)
-* **`data.tlsTimestamp`**: Unix epoch timestamp (seconds) of the verified TLS session. The matching key is trusted only when `validFrom <= tlsTimestamp < validUntil`, with no upper bound when `validUntil` is `null`
+* **`data.tlsTimestamp`**: Unix epoch timestamp (seconds) of when the TLS handshake occurred, as recorded by the notary. This can be used to establish when the proven data was retrieved
 * **`data.request`**: Parsed HTTP request
   * **`method`**: HTTP method (e.g. `"GET"`)
   * **`url`**: Request path and query string
