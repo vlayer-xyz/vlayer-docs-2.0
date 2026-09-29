@@ -1,0 +1,34 @@
+---
+title: Trusted notary keys
+description: Validate the notary that signed a Web Proof
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Trusted notary keys
+
+Cryptographic verification proves that a presentation is internally valid and was signed by the key identified in the result. It does not prove that vlayer trusted that key when the TLS session occurred.
+
+For production, use the authoritative [notary key list](https://keys.vlayer.xyz/notary-keys.production.json). Its format is defined by the [JSON schema](https://keys.vlayer.xyz/schema.json).
+
+<Callout type="warn">
+Treat a proof as trusted only when its returned `notaryKeyFingerprint` matches an entry in the list and:
+
+`validFrom <= tlsTimestamp < validUntil`
+
+When `validUntil` is `null`, there is no upper bound. `tlsTimestamp` is the Unix timestamp from the verified TLS session.
+</Callout>
+
+The list can contain concurrent keys during a rotation and retired keys needed to verify older proofs. Do not select only the newest entry: select the matching fingerprint, then apply that entry's validity window. Fields under `meta`, including `notaryUrls`, are informational and must not be used as trust inputs.
+
+## Fetching and caching
+
+Fetch the list over HTTPS and honor its HTTP cache headers. Refresh it when the cached response expires; do not keep trusting a stale copy indefinitely. Choose fail-closed behavior or a bounded stale-if-error policy appropriate for your availability requirements, and retain the last validated response only for that bounded period.
+
+Validate downloaded documents against the published schema before replacing a known-good cached copy.
+
+## Cross-checking a fingerprint
+
+Each entry includes the notary public key and states the fingerprint algorithm. For the current format, parse `publicKeyPem`, extract its compressed SEC1 public-key bytes, compute SHA-256 over those bytes, and encode the digest as lowercase hexadecimal. The result must equal the entry's `fingerprint`. Use a maintained cryptography library rather than hashing the PEM text or the complete DER/SPKI wrapper.
+
+The list is also the source of truth for `bytes32` expected-notary-fingerprint constants used by on-chain verifiers. A contract that stores one immutable fingerprint must be upgraded or redeployed when key rotation requires it to accept a new key.

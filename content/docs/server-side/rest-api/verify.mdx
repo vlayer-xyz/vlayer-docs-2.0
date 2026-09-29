@@ -11,14 +11,14 @@ import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 Verify a previously generated Web Proof. To verify up to 32 proofs in one request, use [`POST /api/v2.0/verify-batch`](/server-side/rest-api/verify-batch). The verification process:
 
 * **Verifies the HTTPS transcript** - Confirms the integrity of the recorded HTTP request/response data
-* **Verifies the Notary's signature** - Validates the cryptographic signature from the trusted notary service
+* **Verifies the Notary's signature** - Validates the cryptographic signature from the signing key
 * **Confirms data origin** - Ensures the data comes from the expected domain specified in the original request
 * **SSL certificate validation** - Verifies the server's SSL certificate and its complete chain of authority
 * **Extracts plain text transcript** - Retrieves the verified HTTP request/response data for further processing
   * **Automatic decoding** - Handles chunked transfer encoding and gzip compression automatically
   * **Raw transcript access** - Provides hex-encoded raw transcript bytes for verification
 
-A complete verification requires checking both the cryptographic proof and the `notaryKeyFingerprint` — the proof confirms the TLS session's integrity, while the fingerprint identifies which notary signed it. Proofs notarized through vlayer's notary service carry a known, trusted fingerprint and require no additional notary validation; if you use a third-party notary, you must independently confirm that the returned `notaryKeyFingerprint` matches your notary's expected public key before trusting the proof.
+`success: true` validates the presentation and signature, but does not establish that the signer was trusted. Complete verification by checking the returned fingerprint and TLS timestamp against the [trusted notary key list](/server-side/notary-keys).
 
 ## Authentication
 
@@ -56,8 +56,8 @@ Send the `data` object from the `/api/v2.0/prove` response directly as the reque
 * **`apiVersion`**: API version string
 * **`success`**: `true`
 * **`data.serverDomain`**: Domain name of the server that was contacted
-* **`data.notaryKeyFingerprint`**: SHA-256 fingerprint of the notary's public key
-* **`data.tlsTimestamp`**: Unix epoch timestamp (seconds) of when the TLS handshake occurred, as recorded by the notary. This can be used to establish when the proven data was retrieved
+* **`data.notaryKeyFingerprint`**: SHA-256 fingerprint of the notary's public key. It must match an entry in the [trusted notary key list](/server-side/notary-keys)
+* **`data.tlsTimestamp`**: Unix epoch timestamp (seconds) of the verified TLS session. The matching key is trusted only when `validFrom <= tlsTimestamp < validUntil`, with no upper bound when `validUntil` is `null`
 * **`data.request`**: Parsed HTTP request
   * **`method`**: HTTP method (e.g. `"GET"`)
   * **`url`**: Request path and query string

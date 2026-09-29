@@ -74,7 +74,7 @@ v2 rejects requests that contain unknown fields or use snake_case field names, r
 
 ## /verify: TLS timestamp
 
-The v2 `/verify` response includes a new `tlsTimestamp` field — a Unix epoch timestamp (seconds) of when the TLS handshake occurred, as recorded by the notary. This can be used to establish when the proven data was retrieved.
+The v2 `/verify` response includes a new `tlsTimestamp` field — a Unix epoch timestamp (seconds) of when the TLS handshake occurred, as recorded by the notary. Use it with `notaryKeyFingerprint` to apply the [trusted notary key validity window](/server-side/notary-keys).
 
 ## /verify: Headers format
 
