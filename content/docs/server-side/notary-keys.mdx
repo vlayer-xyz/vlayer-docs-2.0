@@ -23,9 +23,7 @@ The list can contain concurrent keys during a rotation and retired keys needed t
 
 ## Fetching and caching
 
-Fetch the list over HTTPS and honor its HTTP cache headers. Refresh it when the cached response expires; do not keep trusting a stale copy indefinitely. Choose fail-closed behavior or a bounded stale-if-error policy appropriate for your availability requirements, and retain the last validated response only for that bounded period.
-
-Validate downloaded documents against the published schema before replacing a known-good cached copy.
+Fetch the list over HTTPS and follow its `Cache-Control` header. When the cached response expires, refresh it with `If-None-Match` so the server can return `304 Not Modified` when the list is unchanged. Treat a copy that you could not refresh as stale.
 
 ## Cross-checking a fingerprint
 
