@@ -138,7 +138,7 @@ Send the extracted presentation to the verification endpoint:
 
 ### Expected Result
 
-You should receive a JSON response with `"success": true` and the decoded request/response data (see below). Any other result should be treated as an invalid proof and must halt further processing or workflows.
+You should receive a JSON response with `"success": true` and the decoded request/response data (see below). This validates the presentation and signature, but does not establish a trusted signer. For every presentation, also require that `data.notaryKeyFingerprint` appears in the [trusted notary key list](/server-side/notary-keys) and that `data.tlsTimestamp` satisfies the matching key's validity window. Halt processing if either check fails.
 
 ```json
 {

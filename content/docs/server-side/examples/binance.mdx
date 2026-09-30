@@ -149,3 +149,5 @@ Response:
   "traceId": "65cf3f6e26ae42f79609b54379fac0aa"
 }
 ```
+
+`success: true` verifies the presentation and signature. Before trusting the result, validate `notaryKeyFingerprint` and `tlsTimestamp` against the [trusted notary key list](/server-side/notary-keys).

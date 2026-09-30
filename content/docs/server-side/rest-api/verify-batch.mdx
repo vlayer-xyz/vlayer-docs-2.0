@@ -14,6 +14,8 @@ Verify up to 32 Web Proofs in one request. Each item is verified the same way as
 HTTP 200 means every proof in the batch was attempted. `success: true` on the envelope does not mean every proof verified. Read `success` on each item in `data.results`.
 </Callout>
 
+For every successful item, also check that `data.notaryKeyFingerprint` is in the [trusted notary key list](/server-side/notary-keys) and that `data.tlsTimestamp` falls within that key's validity window. Per-item `success: true` alone does not establish a trusted signer.
+
 ## Authentication
 
 Requests require header:
@@ -79,7 +81,7 @@ Results stay in request order. `index` is the 0-based position in `proofs`.
 * **`data.results`**: One entry per proof, in request order
   * **`index`**: Position of this proof in `proofs`
   * **`id`**: The request `id`, when one was sent
-  * **`success`**: `true` when this proof verified
+  * **`success`**: `true` when the presentation and signature verified; the trusted-key validity-window check is still required
   * **`data`**: Present when `success` is `true`. Same object [`POST /api/v2.0/verify`](/server-side/rest-api/verify) returns: `serverDomain`, `notaryKeyFingerprint`, `tlsTimestamp`, `request`, and `response`
   * **`error`**: Present when `success` is `false`. A failed item has no `data`
 
